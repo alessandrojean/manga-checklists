@@ -1,0 +1,6 @@
+<resources>
+    <string name="app_name">Manga Checklists</string>
+
+    <string name="action_want">Quero</string>
+    <string name="action_information">Informações</string>
+</resources>
