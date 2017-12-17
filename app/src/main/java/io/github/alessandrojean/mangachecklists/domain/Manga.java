@@ -4,7 +4,9 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by Desktop on 14/12/2017.
@@ -19,8 +21,14 @@ public class Manga implements Parcelable, Comparable<Manga> {
     private String thumbnailUrl;
     private String url;
 
-    public Manga() {
+    private String subtitle;
+    private String synopsis;
+    private String headerUrl;
 
+    private List<DetailGroup> detailGroups;
+
+    public Manga() {
+        this.detailGroups = new ArrayList<>();
     }
 
     public Manga(String name, int volume, long date, String thumbnailUrl, String url) {
@@ -29,14 +37,8 @@ public class Manga implements Parcelable, Comparable<Manga> {
         this.date = date;
         this.thumbnailUrl = thumbnailUrl;
         this.url = url;
-    }
 
-    protected Manga(Parcel in) {
-        name = in.readString();
-        volume = in.readInt();
-        date = in.readLong();
-        thumbnailUrl = in.readString();
-        url = in.readString();
+        this.detailGroups = new ArrayList<>();
     }
 
     public String getName() {
@@ -101,6 +103,59 @@ public class Manga implements Parcelable, Comparable<Manga> {
         this.url = url;
     }
 
+    public String getSubtitle() {
+        return subtitle;
+    }
+
+    public void setSubtitle(String subtitle) {
+        this.subtitle = subtitle;
+    }
+
+    public String getSynopsis() {
+        return synopsis;
+    }
+
+    public void setSynopsis(String synopsis) {
+        this.synopsis = synopsis;
+    }
+
+    public String getHeaderUrl() {
+        return headerUrl;
+    }
+
+    public void setHeaderUrl(String headerUrl) {
+        this.headerUrl = headerUrl;
+    }
+
+    public List<DetailGroup> getDetailGroups() {
+        return detailGroups;
+    }
+
+    public void setDetailGroups(List<DetailGroup> detailGroups) {
+        this.detailGroups = detailGroups;
+    }
+    @Override
+    public int compareTo(@NonNull Manga manga) {
+        return (int) (this.date - manga.getDate());
+    }
+
+    protected Manga(Parcel in) {
+        name = in.readString();
+        volume = in.readInt();
+        date = in.readLong();
+        thumbnailUrl = in.readString();
+        url = in.readString();
+        subtitle = in.readString();
+        synopsis = in.readString();
+        headerUrl = in.readString();
+        if (in.readByte() == 0x01) {
+            detailGroups = new ArrayList<DetailGroup>();
+            in.readList(detailGroups, DetailGroup.class.getClassLoader());
+        } else {
+            detailGroups = null;
+        }
+    }
+
     @Override
     public int describeContents() {
         return 0;
@@ -113,6 +168,15 @@ public class Manga implements Parcelable, Comparable<Manga> {
         dest.writeLong(date);
         dest.writeString(thumbnailUrl);
         dest.writeString(url);
+        dest.writeString(subtitle);
+        dest.writeString(synopsis);
+        dest.writeString(headerUrl);
+        if (detailGroups == null) {
+            dest.writeByte((byte) (0x00));
+        } else {
+            dest.writeByte((byte) (0x01));
+            dest.writeList(detailGroups);
+        }
     }
 
     @SuppressWarnings("unused")
@@ -127,9 +191,4 @@ public class Manga implements Parcelable, Comparable<Manga> {
             return new Manga[size];
         }
     };
-
-    @Override
-    public int compareTo(@NonNull Manga manga) {
-        return (int) (this.date - manga.getDate());
-    }
 }

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/content_main"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="18dp"
+    android:clickable="true"
+    android:background="?android:attr/selectableItemBackground" >
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Your name. #02"
+        android:textColor="@android:color/black"
+        android:textSize="16sp" />
+
+    <TextView
+        android:id="@+id/gift"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/title"
+        android:textSize="14sp"
+        android:textStyle="italic"
+        android:text="Acompanha 01 marca página e 01 post card."/>
+
+    <ImageView
+        android:id="@+id/iv_ic_calendar"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_below="@+id/gift"
+        android:layout_marginEnd="4dp"
+        android:layout_marginRight="4dp"
+        android:layout_marginTop="8dp"
+        android:src="@drawable/ic_calendar_today_grey600_18dp" />
+
+    <TextView
+        android:id="@+id/sent_date"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/iv_ic_calendar"
+        android:layout_toEndOf="@+id/iv_ic_calendar"
+        android:layout_toRightOf="@id/iv_ic_calendar"
+        android:text="14/12/2017"
+        android:textColor="@color/colorLightGrey"
+        android:textSize="14sp"
+        android:textStyle="bold" />
+
+    <!--<CheckBox
+        android:id="@+id/plan_active"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@id/gift"
+        android:layout_marginTop="6dp"
+        android:background="@drawable/checkbox_round_corner"
+        android:padding="5dp"
+        android:text="Assino"
+        android:textColor="@color/colorDarkGrey"
+        android:textSize="16sp" />-->
+
+</RelativeLayout>

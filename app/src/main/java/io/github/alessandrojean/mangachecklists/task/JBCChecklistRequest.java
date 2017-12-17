@@ -27,13 +27,14 @@ import java.util.regex.Pattern;
 import io.github.alessandrojean.mangachecklists.MainActivity;
 import io.github.alessandrojean.mangachecklists.constant.JBC;
 import io.github.alessandrojean.mangachecklists.domain.Manga;
+import io.github.alessandrojean.mangachecklists.fragment.ChecklistFragment;
 
 /**
  * Created by Desktop on 14/12/2017.
  */
 
-public class JBCRequest extends AsyncTask<Void, Void, List<Manga>> {
-    private WeakReference<MainActivity> activity;
+public class JBCChecklistRequest extends AsyncTask<Void, Void, List<Manga>> {
+    private WeakReference<ChecklistFragment> fragment;
     private int month;
     private int year;
 
@@ -42,8 +43,8 @@ public class JBCRequest extends AsyncTask<Void, Void, List<Manga>> {
     private static final String[] MONTHS = {"janeiro", "fevereiro", "marco", "abril", "maio",
         "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"};
 
-    public JBCRequest(MainActivity mainActivity, int month, int year) {
-        this.activity = new WeakReference<>(mainActivity);
+    public JBCChecklistRequest(ChecklistFragment checklistFragment, int month, int year) {
+        this.fragment = new WeakReference<>(checklistFragment);
         this.month = month;
         this.year = year;
     }
@@ -69,12 +70,16 @@ public class JBCRequest extends AsyncTask<Void, Void, List<Manga>> {
             );
 
             for (Element e : list) {
+                if (isCancelled())
+                    return null;
+
                 Manga m = getManga(e);
                 mangas.add(m);
             }
         }
         catch (IOException e) {
             e.printStackTrace();
+            return null;
         }
 
         Collections.sort(mangas);
@@ -177,8 +182,13 @@ public class JBCRequest extends AsyncTask<Void, Void, List<Manga>> {
     protected void onPostExecute(List<Manga> mangas) {
         super.onPostExecute(mangas);
 
-        if (activity.get() != null) {
-            activity.get().updateLista(mangas);
+        if (fragment.get() != null) {
+            fragment.get().updateChecklist(mangas, true);
         }
+    }
+
+    @Override
+    protected void onCancelled() {
+        super.onCancelled();
     }
 }

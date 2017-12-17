@@ -51,12 +51,15 @@ public class MonthYearPickerDialog extends DialogFragment implements NumberPicke
         int month = getArguments().getInt(SELECTED_MONTH, calendar.get(Calendar.MONTH) + 1);
         int maxYear = calendar.get(Calendar.YEAR);
         int year = getArguments().getInt(SELECTED_YEAR, maxYear);
+        int minMonth = year == getArguments().getInt(MINIMUM_YEAR)
+                ? getArguments().getInt(MINIMUM_MONTH)
+                : 1;
 
         View dialog = inflater.inflate(R.layout.fragment_dialog_date, null);
         monthPicker = dialog.findViewById(R.id.picker_month);
         yearPicker = dialog.findViewById(R.id.picker_year);
 
-        monthPicker.setMinValue(1);
+        monthPicker.setMinValue(minMonth);
         monthPicker.setMaxValue(12);
         monthPicker.setValue(month);
         monthPicker.setWrapSelectorWheel(false);
@@ -66,6 +69,8 @@ public class MonthYearPickerDialog extends DialogFragment implements NumberPicke
         yearPicker.setValue(year);
         yearPicker.setOnValueChangedListener(this);
         yearPicker.setWrapSelectorWheel(false);
+
+        builder.setTitle("Data do Checklist");
 
         builder.setView(dialog)
                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {

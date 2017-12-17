@@ -1,228 +1,181 @@
 package io.github.alessandrojean.mangachecklists;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
-import android.app.DatePickerDialog;
-import android.os.PersistableBundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.design.widget.NavigationView;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.DatePicker;
-import android.widget.ProgressBar;
+import android.util.Log;
+import android.view.MenuItem;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
 
-import io.github.alessandrojean.mangachecklists.adapter.MangasAdapter;
-import io.github.alessandrojean.mangachecklists.constant.JBC;
-import io.github.alessandrojean.mangachecklists.domain.Manga;
-import io.github.alessandrojean.mangachecklists.fragment.MonthYearPickerDialog;
-import io.github.alessandrojean.mangachecklists.mock.JBCMock;
-import io.github.alessandrojean.mangachecklists.task.JBCRequest;
-import me.zhanghai.android.materialprogressbar.CircularProgressDrawable;
-import me.zhanghai.android.materialprogressbar.IndeterminateCircularProgressDrawable;
+import io.github.alessandrojean.mangachecklists.fragment.ChecklistFragment;
+import io.github.alessandrojean.mangachecklists.fragment.FragmentAbstract;
+import io.github.alessandrojean.mangachecklists.fragment.PlansFragment;
 
-public class MainActivity extends AppCompatActivity implements DatePickerDialog.OnDateSetListener{
-    private MangasAdapter mangasAdapter;
-    private ArrayList<Manga> mangas;
+/**
+ * Created by Desktop on 16/12/2017.
+ */
 
-    private SwipeRefreshLayout swipeRefreshLayout;
-    private FloatingActionButton fab;
-    private ProgressBar progressBar;
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    String title = ChecklistFragment.TITLE;
+    String subtitle = "";
 
-    private int actualMonth, actualYear;
-    private int shortAnimationDuration;
+    Toolbar toolbar;
+    DrawerLayout drawerLayout;
+    NavigationView navigationView;
+
+    private int checklistActualMonth = 0;
+    private int checklistActualYear = 0;
+
+    public static final String CHECKLIST_ACTUAL_MONTH_KEY = "checklist_actual_month_key";
+    public static final String CHECKLIST_ACTUAL_YEAR_KEY = "checklist_actual_year_key";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+
+        initDrawerNavigation();
+
         if (savedInstanceState != null) {
-            mangas = savedInstanceState.getParcelableArrayList(Manga.MANGAS_KEY);
-            initViews();
-        }
-        else {
-            mangas = new ArrayList<>();
-            initViews();
-            retrieveMangas();
+            title = savedInstanceState.getString(FragmentAbstract.TITLE, title);
+            subtitle = savedInstanceState.getString(FragmentAbstract.SUBTITLE, subtitle);
+            checklistActualMonth = savedInstanceState.getInt(CHECKLIST_ACTUAL_MONTH_KEY);
+            checklistActualYear = savedInstanceState.getInt(CHECKLIST_ACTUAL_YEAR_KEY);
         }
 
-        initViews();
+        Log.d("date-oncreate-bif", checklistActualMonth + "/" + checklistActualYear);
+
+        if (getSupportFragmentManager().findFragmentByTag(FragmentAbstract.KEY) == null) {
+            setNowDateToChecklist();
+            switchFragment(new ChecklistFragment(), FragmentAbstract.CHECKLIST);
+        }
+
+        Log.d("date-oncreate-aif", checklistActualMonth + "/" + checklistActualYear);
     }
 
-    private void initViews() {
-        fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                initDateDialog();
-            }
-        });
+    private void initDrawerNavigation() {
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this,
+                drawerLayout,
+                toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close
+        );
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
 
-        progressBar = findViewById(R.id.progress_bar);
-        progressBar.setIndeterminateDrawable(new IndeterminateCircularProgressDrawable(this));
-
-        swipeRefreshLayout = findViewById(R.id.swipe_refresh_layout);
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                retrieveMangas(actualMonth, actualYear);
-            }
-        });
-
-        RecyclerView recyclerView = findViewById(R.id.mangas);
-        recyclerView.setHasFixedSize(true);
-
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(this, 2);
-        recyclerView.setLayoutManager(gridLayoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-
-        mangasAdapter = new MangasAdapter(this, mangas);
-        recyclerView.setAdapter(mangasAdapter);
-
-        swipeRefreshLayout.setVisibility(View.GONE);
-        fab.setVisibility(View.GONE);
-
-        shortAnimationDuration = getResources().getInteger(android.R.integer.config_longAnimTime);
-    }
-
-    private void showContent() {
-        swipeRefreshLayout.setAlpha(0f);
-        fab.setAlpha(0f);
-        swipeRefreshLayout.setVisibility(View.VISIBLE);
-        fab.setVisibility(View.VISIBLE);
-
-        swipeRefreshLayout.animate()
-                .alpha(1f)
-                .setDuration(shortAnimationDuration)
-                .setListener(null);
-        fab.animate()
-                .alpha(1f)
-                .setDuration(shortAnimationDuration)
-                .setListener(null);
-
-        progressBar.animate()
-                .alpha(0f)
-                .setDuration(shortAnimationDuration)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        progressBar.setVisibility(View.GONE);
-                    }
-                });
-    }
-
-    private void showProgressBar() {
-        progressBar.setAlpha(0f);
-        progressBar.setVisibility(View.VISIBLE);
-
-        progressBar.animate()
-                .alpha(1f)
-                .setDuration(shortAnimationDuration)
-                .setListener(null);
-
-        swipeRefreshLayout.animate()
-                .alpha(0f)
-                .setDuration(shortAnimationDuration)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        swipeRefreshLayout.setVisibility(View.GONE);
-                    }
-                });
-
-        fab.animate()
-                .alpha(0f)
-                .setDuration(shortAnimationDuration)
-                .setListener(new AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        fab.setVisibility(View.GONE);
-                    }
-                });
-    }
-
-    private void crossfade(boolean inverse) {
-        if (inverse)
-            showProgressBar();
-        else
-            showContent();
+        navigationView.setNavigationItemSelectedListener(this);
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState, PersistableBundle outPersistentState) {
-        outState.putParcelableArrayList(Manga.MANGAS_KEY, mangas);
-        super.onSaveInstanceState(outState, outPersistentState);
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        Fragment fragment = null;
+        int type = 0;
+
+        switch (item.getItemId()) {
+            case R.id.nav_checklist:
+                fragment = new ChecklistFragment();
+                title = ChecklistFragment.TITLE;
+                type = FragmentAbstract.CHECKLIST;
+                break;
+            case R.id.nav_plans:
+                fragment = new PlansFragment();
+                title = PlansFragment.TITLE;
+                type = FragmentAbstract.PLAN;
+                break;
+        }
+
+        subtitle = "";
+
+        toolbar.setTitle(title);
+        toolbar.setSubtitle(subtitle);
+        switchFragment(fragment, type);
+
+        drawerLayout.closeDrawer(GravityCompat.START);
+
+        return true;
     }
 
-    private void initDateDialog() {
+    private void switchFragment(Fragment fragment, int type) {
         Bundle bundle = new Bundle();
-        bundle.putInt(MonthYearPickerDialog.MINIMUM_MONTH, JBC.MINIMUM_MONTH);
-        bundle.putInt(MonthYearPickerDialog.MINIMUM_YEAR, JBC.MINIMUM_YEAR);
-        bundle.putInt(MonthYearPickerDialog.SELECTED_MONTH, actualMonth);
-        bundle.putInt(MonthYearPickerDialog.SELECTED_YEAR, actualYear);
+        bundle.putInt(FragmentAbstract.TYPE_KEY, type);
+        bundle.putInt(CHECKLIST_ACTUAL_MONTH_KEY, checklistActualMonth);
+        bundle.putInt(CHECKLIST_ACTUAL_YEAR_KEY, checklistActualYear);
 
-        MonthYearPickerDialog monthYearPickerDialog = new MonthYearPickerDialog();
-        monthYearPickerDialog.setArguments(bundle);
-        monthYearPickerDialog.setListener(this);
-        monthYearPickerDialog.show(getSupportFragmentManager(), MonthYearPickerDialog.KEY);
-    }
+        fragment.setArguments(bundle);
 
-    private void retrieveMangas() {
-        Calendar calendar = Calendar.getInstance();
-
-        actualMonth = calendar.get(Calendar.MONTH) + 1;
-        actualYear = calendar.get(Calendar.YEAR);
-
-        retrieveMangas(actualMonth, actualYear);
-    }
-
-    private void retrieveMangas(int month, int year) {
-        new JBCRequest(this, month, year).execute();
-    }
-
-    public void updateLista(List<Manga> mangas) {
-        this.mangas.clear();
-        this.mangas.addAll(mangas);
-        mangasAdapter.notifyDataSetChanged();
-        swipeRefreshLayout.setRefreshing(false);
-
-        showDateInActionBar();
-        crossfade(false);
-    }
-
-    private void showDateInActionBar() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(actualYear, actualMonth, 0);
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM/yyyy");
-        String formatted = dateFormat.format(calendar.getTime());
-
-        formatted = Character.toUpperCase(formatted.charAt(0)) + formatted.substring(1);
-
-        getSupportActionBar().setSubtitle(formatted);
+        getSupportFragmentManager()
+                .beginTransaction()
+                //.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                .replace(R.id.rl_container, fragment, FragmentAbstract.KEY)
+                .commit();
     }
 
     @Override
-    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-        if (actualYear != year || actualMonth != month) {
-            actualMonth = month;
-            actualYear = year;
+    protected void onResume() {
+        super.onResume();
+        toolbar.setTitle(title);
+        toolbar.setSubtitle(subtitle);
 
-            crossfade(true);
-            new JBCRequest(this, month, year).execute();
+
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        outState.putString(FragmentAbstract.TITLE, title);
+        outState.putString(FragmentAbstract.SUBTITLE, subtitle);
+        outState.putInt(CHECKLIST_ACTUAL_MONTH_KEY, checklistActualMonth);
+        outState.putInt(CHECKLIST_ACTUAL_YEAR_KEY, checklistActualYear);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        title = savedInstanceState.getString(FragmentAbstract.TITLE, title);
+        subtitle = savedInstanceState.getString(FragmentAbstract.SUBTITLE, subtitle);
+        checklistActualMonth = savedInstanceState.getInt(CHECKLIST_ACTUAL_MONTH_KEY);
+        checklistActualYear = savedInstanceState.getInt(CHECKLIST_ACTUAL_YEAR_KEY);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(GravityCompat.START))
+            drawerLayout.closeDrawer(GravityCompat.START);
+        else
+            super.onBackPressed();
+    }
+
+    public Toolbar getToolbar() {
+        return toolbar;
+    }
+
+    public void setNowDateToChecklist() {
+        if (checklistActualMonth == 0 && checklistActualYear == 0) {
+            Calendar calendar = Calendar.getInstance();
+
+            checklistActualMonth = calendar.get(Calendar.MONTH) + 1;
+            checklistActualYear = calendar.get(Calendar.YEAR);
         }
+    }
+
+    public void setActualChecklist(int month, int year) {
+        this.checklistActualMonth = month;
+        this.checklistActualYear = year;
     }
 }
