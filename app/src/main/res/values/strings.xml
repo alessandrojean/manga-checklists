@@ -4,6 +4,10 @@
 
     <string name="action_want">Quero</string>
     <string name="action_information">Informações</string>
+    <string name="action_filter">Filtrar</string>
+
+    <string name="action_filter_jbc">Editora JBC</string>
+    <string name="action_filter_panini">Panini Comics</string>
 
     <string name="navigation_drawer_open">Abrir navigation drawer</string>
     <string name="navigation_drawer_close">Fechar navigation drawer</string>

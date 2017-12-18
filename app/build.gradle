@@ -6,15 +6,23 @@ android {
         applicationId "io.github.alessandrojean.mangachecklists"
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 1
-        versionName "1.1.0"
+        versionCode 3
+        versionName "1.2.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
-        release {
+        debug {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
@@ -37,4 +45,5 @@ dependencies {
 
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.orhanobut:hawk:2.0.1'
+    compile 'com.google.code.gson:gson:2.8.2'
 }

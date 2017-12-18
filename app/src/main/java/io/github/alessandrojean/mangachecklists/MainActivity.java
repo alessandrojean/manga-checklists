@@ -12,6 +12,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import java.util.Calendar;
@@ -34,9 +35,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private int checklistActualMonth = 0;
     private int checklistActualYear = 0;
+    private int checklistActualFilterId = R.id.action_filter_jbc;
 
     public static final String CHECKLIST_ACTUAL_MONTH_KEY = "checklist_actual_month_key";
     public static final String CHECKLIST_ACTUAL_YEAR_KEY = "checklist_actual_year_key";
+    public static final String CHECKLIST_ACTUAL_FILTER_ID = "checklist_actual_filter_id_key";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             subtitle = savedInstanceState.getString(FragmentAbstract.SUBTITLE, subtitle);
             checklistActualMonth = savedInstanceState.getInt(CHECKLIST_ACTUAL_MONTH_KEY);
             checklistActualYear = savedInstanceState.getInt(CHECKLIST_ACTUAL_YEAR_KEY);
+            checklistActualFilterId = savedInstanceState.getInt(CHECKLIST_ACTUAL_FILTER_ID);
         }
 
         Log.d("date-oncreate-bif", checklistActualMonth + "/" + checklistActualYear);
@@ -116,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         bundle.putInt(FragmentAbstract.TYPE_KEY, type);
         bundle.putInt(CHECKLIST_ACTUAL_MONTH_KEY, checklistActualMonth);
         bundle.putInt(CHECKLIST_ACTUAL_YEAR_KEY, checklistActualYear);
+        bundle.putInt(CHECKLIST_ACTUAL_FILTER_ID, checklistActualFilterId);
 
         fragment.setArguments(bundle);
 
@@ -141,6 +146,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         outState.putString(FragmentAbstract.SUBTITLE, subtitle);
         outState.putInt(CHECKLIST_ACTUAL_MONTH_KEY, checklistActualMonth);
         outState.putInt(CHECKLIST_ACTUAL_YEAR_KEY, checklistActualYear);
+        outState.putInt(CHECKLIST_ACTUAL_FILTER_ID, checklistActualFilterId);
         super.onSaveInstanceState(outState);
     }
 
@@ -151,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         subtitle = savedInstanceState.getString(FragmentAbstract.SUBTITLE, subtitle);
         checklistActualMonth = savedInstanceState.getInt(CHECKLIST_ACTUAL_MONTH_KEY);
         checklistActualYear = savedInstanceState.getInt(CHECKLIST_ACTUAL_YEAR_KEY);
+        checklistActualFilterId = savedInstanceState.getInt(CHECKLIST_ACTUAL_FILTER_ID);
     }
 
     @Override
@@ -177,5 +184,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void setActualChecklist(int month, int year) {
         this.checklistActualMonth = month;
         this.checklistActualYear = year;
+    }
+
+    public void setActualChecklistFilterId(int filterId) {
+        this.checklistActualFilterId = filterId;
     }
 }

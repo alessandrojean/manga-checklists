@@ -1,76 +1,45 @@
-package io.github.alessandrojean.mangachecklists.task;
+package io.github.alessandrojean.mangachecklists.parser.detail;
 
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
 
-import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
 
-import io.github.alessandrojean.mangachecklists.MangaDetailsActivity;
 import io.github.alessandrojean.mangachecklists.domain.Detail;
 import io.github.alessandrojean.mangachecklists.domain.DetailGroup;
 import io.github.alessandrojean.mangachecklists.domain.Manga;
 
 /**
- * Created by Desktop on 16/12/2017.
+ * Created by Desktop on 18/12/2017.
  */
 
-public class JBCDetailsRequest extends AsyncTask<Void, Void, Manga> {
-    private WeakReference<MangaDetailsActivity> activity;
-    private Manga manga;
+public class JBCDetailParser extends DetailParser {
 
-    private String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36";
-
-    public JBCDetailsRequest(MangaDetailsActivity activity, Manga manga) {
-        this.activity = new WeakReference<>(activity);
-        this.manga = manga;
+    public JBCDetailParser(Manga manga) {
+        super(manga);
     }
 
     @Override
-    protected Manga doInBackground(Void... voids) {
-        Document html;
+    protected Manga getManga(Document html) {
+        if (html.selectFirst("div.extra-info-container") != null)
+            manga = parseMangaNew(html);
+        else
+            manga = parseMangaOld(html);
 
-        try {
-            html = Jsoup
-                    .connect(manga.getUrl())
-                    .userAgent(USER_AGENT)
-                    .get();
-
-            parseManga(html);
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
+        // If manga is from a plan.
+        //if (manga.getThumbnailUrl() == null) {
+            manga.setThumbnailUrl(fixUrl(html.select("img.center-block.mb20").attr("src")));
+        //}
 
         return manga;
     }
 
-    private void parseManga(Document html) {
-        if (html.selectFirst("div.extra-info-container") != null)
-            parseMangaNew(html);
-        else
-            parseMangaOld(html);
-
-        // If manga is from a plan.
-        if (manga.getThumbnailUrl() == null) {
-            manga.setThumbnailUrl(fixUrl(html.select("img.center-block.mb20").attr("src")));
-        }
-    }
-
-    private void parseMangaOld(Document html) {
+    private Manga parseMangaOld(Document html) {
         Element subtitle = html.selectFirst("em.text-center.excerpt");
         Element synopsis = html.selectFirst("div.mb30[itemprop=\"description\"] p");
         Element headerImage = html.selectFirst("img.colectionHeader.mb10");
@@ -88,7 +57,9 @@ public class JBCDetailsRequest extends AsyncTask<Void, Void, Manga> {
             Element detailGroupName = p.previousElementSibling();
 
             DetailGroup detailGroup = new DetailGroup();
-            detailGroup.setName(detailGroupName.text());
+
+            if (detailGroupName.tagName() == "h2" || detailGroupName.tagName() == "h3")
+                detailGroup.setName(detailGroupName.text());
 
             List<Detail> detailList = new ArrayList<>();
 
@@ -99,7 +70,7 @@ public class JBCDetailsRequest extends AsyncTask<Void, Void, Manga> {
                 detail.setName(e.text().replace(":", ""));
 
                 Node node = e.nextSibling();
-                detail.setDetail(node.toString().trim());
+                detail.setDetail(node.toString().trim().replace("&nbsp;", ""));
 
                 Log.d("detail", detail.getName() + detail.getDetail());
 
@@ -112,9 +83,11 @@ public class JBCDetailsRequest extends AsyncTask<Void, Void, Manga> {
         }
 
         manga.setDetailGroups(detailGroupList);
+
+        return manga;
     }
 
-    private void parseMangaNew(Document html) {
+    private Manga parseMangaNew(Document html) {
         Element subtitle = html.selectFirst("em.text-center.excerpt");
         Element synopsis = html.selectFirst("div.mb30[itemprop=\"description\"] p");
         Element headerImage = html.selectFirst("img.colectionHeader.mb10");
@@ -144,7 +117,7 @@ public class JBCDetailsRequest extends AsyncTask<Void, Void, Manga> {
             for (Element f : info) {
                 Detail detail = new Detail();
                 detail.setName(f.select("strong").text().replace(":", ""));
-                detail.setDetail(f.select("span").text());
+                detail.setDetail(f.select("span").text().replace("&nbsp;", ""));
 
                 Log.d("detail", detail.getName() + detail.getDetail());
 
@@ -157,18 +130,7 @@ public class JBCDetailsRequest extends AsyncTask<Void, Void, Manga> {
         }
 
         manga.setDetailGroups(detailGroupList);
-    }
 
-    private String fixUrl(String urlStr) {
-        return Uri.encode(urlStr, "@#&=*+-_.,:!?()/~'%");
-    }
-
-    @Override
-    protected void onPostExecute(Manga manga) {
-        super.onPostExecute(manga);
-
-        if (activity.get() != null) {
-            activity.get().showInformation(manga, true);
-        }
+        return manga;
     }
 }

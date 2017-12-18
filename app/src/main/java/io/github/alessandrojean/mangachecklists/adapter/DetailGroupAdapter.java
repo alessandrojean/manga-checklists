@@ -47,6 +47,10 @@ public class DetailGroupAdapter extends RecyclerView.Adapter<DetailGroupAdapter.
 
         private void setData(DetailGroup detailGroup) {
             tvTitle.setText(detailGroup.getName());
+            
+            if (detailGroup.getName() == null)
+                tvTitle.setVisibility(View.GONE);
+
             updateRecyclerView(rvDetails, detailGroup.getDetails());
         }
 

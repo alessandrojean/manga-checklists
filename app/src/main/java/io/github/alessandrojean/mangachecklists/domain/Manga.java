@@ -4,8 +4,11 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -14,12 +17,16 @@ import java.util.List;
 
 public class Manga implements Parcelable, Comparable<Manga> {
     public static final String MANGAS_KEY = "mangas_key";
+    public static final int TYPE_JBC = 0;
+    public static final int TYPE_PANINI = 1;
 
     private String name;
     private int volume;
     private long date;
+    private double price;
     private String thumbnailUrl;
     private String url;
+    private int type;
 
     private String subtitle;
     private String synopsis;
@@ -87,6 +94,14 @@ public class Manga implements Parcelable, Comparable<Manga> {
         this.date = calendar.getTimeInMillis();
     }
 
+    public void setDate(String dateStr) {
+        try {
+            Date date = new SimpleDateFormat("dd/MM/yyyy").parse(dateStr);
+
+            this.date = date.getTime();
+        } catch (ParseException e) { }
+    }
+
     public String getThumbnailUrl() {
         return thumbnailUrl;
     }
@@ -134,8 +149,38 @@ public class Manga implements Parcelable, Comparable<Manga> {
     public void setDetailGroups(List<DetailGroup> detailGroups) {
         this.detailGroups = detailGroups;
     }
+
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public int getType() {
+        return type;
+    }
+
+    public void setType(int type) {
+        this.type = type;
+    }
+
     @Override
     public int compareTo(@NonNull Manga manga) {
+        /*if (this.date != 0 && manga.getDate() != 0)
+            return (int) (this.date - manga.getDate());
+        else if (this.date == 0)
+            return -1;
+        else
+            return 1;*/
+
+        if (this.date == 0 && manga.getDate() == 0)
+            return 0;
+        if (this.date == 0)
+            return 1;
+        if (manga.getDate() == 0)
+            return -1;
         return (int) (this.date - manga.getDate());
     }
 
@@ -143,8 +188,10 @@ public class Manga implements Parcelable, Comparable<Manga> {
         name = in.readString();
         volume = in.readInt();
         date = in.readLong();
+        price = in.readDouble();
         thumbnailUrl = in.readString();
         url = in.readString();
+        type = in.readInt();
         subtitle = in.readString();
         synopsis = in.readString();
         headerUrl = in.readString();
@@ -166,8 +213,10 @@ public class Manga implements Parcelable, Comparable<Manga> {
         dest.writeString(name);
         dest.writeInt(volume);
         dest.writeLong(date);
+        dest.writeDouble(price);
         dest.writeString(thumbnailUrl);
         dest.writeString(url);
+        dest.writeInt(type);
         dest.writeString(subtitle);
         dest.writeString(synopsis);
         dest.writeString(headerUrl);

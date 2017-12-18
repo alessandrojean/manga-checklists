@@ -115,5 +115,8 @@ public class MonthYearPickerDialog extends DialogFragment implements NumberPicke
 
             monthPicker.setValue(actualMonth);
         }
+
+        yearPicker.setWrapSelectorWheel(false);
+        monthPicker.setWrapSelectorWheel(false);
     }
 }

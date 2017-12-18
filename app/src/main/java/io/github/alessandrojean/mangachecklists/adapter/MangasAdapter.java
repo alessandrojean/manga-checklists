@@ -57,6 +57,7 @@ public class MangasAdapter extends RecyclerView.Adapter<MangasAdapter.ViewHolder
                     ? Html.fromHtml("<b>"+manga.getName()+"</b> #"+manga.getVolume())
                     : Html.fromHtml("<b>" + manga.getName() +"</b>")
             );
+
             tvDate.setText(manga.getFormattedDate());
 
             Picasso.with(context)
