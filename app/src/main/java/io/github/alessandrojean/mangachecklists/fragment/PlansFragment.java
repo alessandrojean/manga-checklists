@@ -87,6 +87,9 @@ public class PlansFragment extends FragmentAbstract {
             }
         }
 
+        if (!isReloading)
+            crossfade(true);
+
         jbcPlanRequest = new JBCPlanRequest(this);
         jbcPlanRequest.execute();
     }
@@ -100,9 +103,10 @@ public class PlansFragment extends FragmentAbstract {
             plansAdapter.notifyDataSetChanged();
             swipeRefreshLayout.setRefreshing(false);
 
-            if (animate)
+            if (animate && !isReloading)
                 crossfade(false);
             else {
+                floatingActionButton.setVisibility(View.GONE);
                 swipeRefreshLayout.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.GONE);
             }

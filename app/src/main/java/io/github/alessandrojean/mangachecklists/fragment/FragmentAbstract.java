@@ -100,6 +100,7 @@ public abstract class FragmentAbstract extends Fragment{
         if (isLoading) {
             swipeRefreshLayout.setVisibility(View.GONE);
             floatingActionButton.setVisibility(View.GONE);
+            progressBar.setVisibility(View.VISIBLE);
         }
         else {
             progressBar.setVisibility(View.GONE);
