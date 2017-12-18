@@ -11,17 +11,16 @@ parse the data exists, but it's not the main purpose.
 
 ## Future features
 
-- Offline cache;
 - Notifications when the checked mangas are available.
 
 ## Publishers
 
 Available at moment:
-- [Editora JBC](https://mangasjbc.com.br/): content parsed by HTML from the site.
+- [Editora JBC](https://mangasjbc.com.br/): checklists and plans;
+- [Panini Comics](https://loja.panini.com.br/): checklists.
 
 Future implementations:
 
-- [Panini Comics](https://loja.panini.com.br/);
 - [NewPOP Editora](http://www.newpop.com.br).
 
 ## License
