@@ -30,7 +30,7 @@ import io.github.alessandrojean.mangachecklists.parser.detail.PaniniDetailParser
 
 public class PaniniChecklistParser extends ChecklistParser {
     private Context context;
-    private List<ChecklistData> checklistDataList;
+    private ArrayList<ChecklistData> checklistDataList;
     private int checklistId;
 
     public static final String URL = "http://loja.panini.com.br/panini/solucoes/Busca.aspx?i=%d|%d,%d|%d&o=7";
@@ -50,9 +50,11 @@ public class PaniniChecklistParser extends ChecklistParser {
     public PaniniChecklistParser(Context context) {
         this.context = context;
         checklistDataList = new ArrayList<>();
+
+        initChecklistIds(false);
     }
 
-    private void initChecklistIds() {
+    private void initChecklistIds(boolean loadFromApi) {
         Hawk.init(context).build();
 
         if (Hawk.contains(CHECKLIST_DATA_OBTAINED_DATE)) {
@@ -69,7 +71,7 @@ public class PaniniChecklistParser extends ChecklistParser {
                 Hawk.put(CHECKLIST_DATA_OBTAINED_DATE, actualDate.getTimeInMillis());
             }
         }
-        else if (!Hawk.contains(CHECKLIST_DATA_KEY)) {
+        else if (!Hawk.contains(CHECKLIST_DATA_KEY) && loadFromApi) {
             List<ChecklistData> checklistDataJson = getChecklistDataFromAPI();
             Hawk.put(CHECKLIST_DATA_KEY, checklistDataJson);
             Hawk.put(CHECKLIST_DATA_OBTAINED_DATE, getActualDate().getTimeInMillis());
@@ -112,7 +114,7 @@ public class PaniniChecklistParser extends ChecklistParser {
 
     @Override
     protected String getUrl(int month, int year) {
-        initChecklistIds();
+        initChecklistIds(true);
 
         checklistId = getChecklistId(month, year);
         return String.format(URL, TYPE_BRAND, BRAND_PLANET_MANGA, TYPE_CHECKLIST, checklistId);
@@ -130,7 +132,7 @@ public class PaniniChecklistParser extends ChecklistParser {
 
     @Override
     public int getMinimumMonth() {
-        return 1;
+        return 2;
     }
 
     @Override
@@ -141,6 +143,11 @@ public class PaniniChecklistParser extends ChecklistParser {
     @Override
     public String getChecklistKey() {
         return "panini_manga_list_key_";
+    }
+
+    @Override
+    public ArrayList<ChecklistData> getAvailableChecklists() {
+        return checklistDataList;
     }
 
     @Override

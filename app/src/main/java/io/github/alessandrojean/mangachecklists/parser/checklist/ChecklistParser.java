@@ -11,6 +11,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
+import io.github.alessandrojean.mangachecklists.domain.ChecklistData;
 import io.github.alessandrojean.mangachecklists.domain.Manga;
 
 /**
@@ -34,6 +35,10 @@ abstract public class ChecklistParser {
 
     public String getChecklistKey() {
         return "";
+    }
+
+    public ArrayList<ChecklistData> getAvailableChecklists() {
+        return null;
     }
 
     public List<Manga> getChecklist(int month, int year) {

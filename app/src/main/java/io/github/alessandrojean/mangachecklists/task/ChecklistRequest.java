@@ -17,7 +17,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import io.github.alessandrojean.mangachecklists.parser.checklist.ChecklistParser;
-import io.github.alessandrojean.mangachecklists.constant.JBC;
 import io.github.alessandrojean.mangachecklists.domain.Manga;
 import io.github.alessandrojean.mangachecklists.fragment.ChecklistFragment;
 

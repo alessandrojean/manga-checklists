@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.github.alessandrojean.mangachecklists.domain.Checklist;
+import io.github.alessandrojean.mangachecklists.domain.ChecklistData;
 import io.github.alessandrojean.mangachecklists.domain.Manga;
 import io.github.alessandrojean.mangachecklists.parser.detail.JBCDetailParser;
 
@@ -25,6 +27,8 @@ import io.github.alessandrojean.mangachecklists.parser.detail.JBCDetailParser;
  */
 
 public class JBCChecklistParser extends ChecklistParser {
+
+    private ArrayList<ChecklistData> checklistDataList;
 
     private static final String[] MONTHS = {"janeiro", "fevereiro", "marco", "abril", "maio",
             "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"};
@@ -36,6 +40,46 @@ public class JBCChecklistParser extends ChecklistParser {
 
     public static final String PATTERN_INFO = "^(.*?)(?: #(\\d+))?(?: (?:–|-) (\\d+)ª temp.)?(?: (?:–|-) (\\d+)\\/(\\d+))?$";
     public static final String PATTERN_IMAGE = "^(?:.*)(\\d{3})x(\\d{3}).(?:.*)$";
+
+    public JBCChecklistParser() {
+        checklistDataList = new ArrayList<>();
+        initChecklistDataList();
+    }
+
+    private void initChecklistDataList() {
+        int minimumYear = getMinimumYear();
+        int minimumMonth = getMinimumMonth();
+
+        Calendar actualDate = Calendar.getInstance();
+
+        int maxMonth = actualDate.get(Calendar.MONTH) + 1;
+        int maxYear = actualDate.get(Calendar.YEAR);
+
+        int m = maxYear - minimumYear + 1;
+
+        for (int i = 0; i < m; i++) {
+            ChecklistData checklistData = new ChecklistData();
+            checklistData.setYear(minimumYear + i);
+
+            List<Checklist> checklists = new ArrayList<>();
+
+            int n = i == m - 1 ? maxMonth : 12;
+            int s = i == 0 ? minimumMonth - 1 : 0;
+
+            for (int j = s; j < n; j++) {
+                Checklist checklist = new Checklist();
+                checklist.setMonth(j + 1);
+
+                //Log.d("checklist-data", "Adding "+ (j + 1) + "/" + (minimumYear + i));
+
+                checklists.add(checklist);
+            }
+
+            checklistData.setChecklists(checklists);
+
+            checklistDataList.add(checklistData);
+        }
+    }
 
     @Override
     protected String getUrl(int month, int year) {
@@ -55,6 +99,11 @@ public class JBCChecklistParser extends ChecklistParser {
     @Override
     public String getChecklistKey() {
         return "jbc_manga_list_key_";
+    }
+
+    @Override
+    public ArrayList<ChecklistData> getAvailableChecklists() {
+        return checklistDataList;
     }
 
     @Override

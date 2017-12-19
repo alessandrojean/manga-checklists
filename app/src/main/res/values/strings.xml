@@ -1,13 +1,21 @@
 <resources>
     <string name="app_name">Manga Checklists</string>
-    <string name="app_version">v1.1.0</string>
+    <string name="app_version">v1.2.0</string>
+    <string name="app_github">https://github.com/alessandrojean/manga-checklists</string>
 
     <string name="action_want">Quero</string>
     <string name="action_information">Informações</string>
     <string name="action_filter">Filtrar</string>
+    <string name="action_try_again">Tentar novamente</string>
 
     <string name="action_filter_jbc">Editora JBC</string>
     <string name="action_filter_panini">Panini Comics</string>
+
+    <string name="nav_checklists">Checklists</string>
+    <string name="nav_plans">Assinaturas</string>
+    <string name="nav_about">Sobre</string>
+
+    <string name="text_error_loading">Um erro ocorreu na solicitação.</string>
 
     <string name="navigation_drawer_open">Abrir navigation drawer</string>
     <string name="navigation_drawer_close">Fechar navigation drawer</string>
@@ -102,4 +110,5 @@
         "when a user tries to pick up one of cards.\n\n"
     </string>
     <string name="action_settings">Settings</string>
+    <string name="title_activity_about">AboutActivity</string>
 </resources>

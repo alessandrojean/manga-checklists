@@ -11,9 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.alessandrojean.mangachecklists.adapter.PlansAdapter;
-import io.github.alessandrojean.mangachecklists.constant.JBC;
 import io.github.alessandrojean.mangachecklists.domain.Plan;
-import io.github.alessandrojean.mangachecklists.task.JBCPlanRequest;
+import io.github.alessandrojean.mangachecklists.parser.plan.JBCPlanParser;
+import io.github.alessandrojean.mangachecklists.parser.plan.PlanParser;
+import io.github.alessandrojean.mangachecklists.task.PlanRequest;
 
 /**
  * Created by Desktop on 16/12/2017.
@@ -26,7 +27,8 @@ public class PlansFragment extends FragmentAbstract {
 
     private List<Plan> plans;
 
-    private JBCPlanRequest jbcPlanRequest;
+    private PlanRequest planRequest;
+    private PlanParser parser;
 
     public PlansFragment() {
         this.plans = new ArrayList<>();
@@ -53,6 +55,8 @@ public class PlansFragment extends FragmentAbstract {
         plansAdapter = new PlansAdapter(getActivity(), plans);
         recyclerView.setAdapter(plansAdapter);
 
+        parser = new JBCPlanParser();
+
         initList();
         retrievePlans();
     }
@@ -61,25 +65,27 @@ public class PlansFragment extends FragmentAbstract {
     public void onDestroy() {
         super.onDestroy();
 
-        if (jbcPlanRequest != null && jbcPlanRequest.getStatus() == JBCPlanRequest.Status.RUNNING) {
-            jbcPlanRequest.cancel(true);
-            jbcPlanRequest = null;
+        if (planRequest != null && planRequest.getStatus() == PlanRequest.Status.RUNNING) {
+            planRequest.cancel(true);
+            planRequest = null;
         }
     }
 
     private void initList() {
         Hawk.init(getContext()).build();
 
-        if (!Hawk.contains(JBC.PLANS_LIST_KEY))
-            Hawk.put(JBC.PLANS_LIST_KEY, plans);
+        if (!Hawk.contains(parser.getPlanKey()))
+            Hawk.put(parser.getPlanKey(), plans);
 
-        List<Plan> hawkList = Hawk.get(JBC.PLANS_LIST_KEY);
+        List<Plan> hawkList = Hawk.get(parser.getPlanKey());
         plans.addAll(hawkList);
     }
 
     private void retrievePlans() {
-        if (!isReloading && Hawk.contains(JBC.PLANS_LIST_KEY)) {
-            List<Plan> hawkList = Hawk.get(JBC.PLANS_LIST_KEY);
+        parser = new JBCPlanParser();
+
+        if (!isReloading && Hawk.contains(parser.getPlanKey())) {
+            List<Plan> hawkList = Hawk.get(parser.getPlanKey());
 
             if (hawkList.size() != 0) {
                 updatePlans(hawkList, false);
@@ -90,8 +96,8 @@ public class PlansFragment extends FragmentAbstract {
         if (!isReloading)
             crossfade(true);
 
-        jbcPlanRequest = new JBCPlanRequest(this);
-        jbcPlanRequest.execute();
+        planRequest = new PlanRequest(this, parser);
+        planRequest.execute();
     }
 
     public void updatePlans(List<Plan> plans, boolean animate) {
@@ -99,7 +105,7 @@ public class PlansFragment extends FragmentAbstract {
             this.plans.clear();
             this.plans.addAll(plans);
 
-            Hawk.put(JBC.PLANS_LIST_KEY, plans);
+            Hawk.put(parser.getPlanKey(), plans);
             plansAdapter.notifyDataSetChanged();
             swipeRefreshLayout.setRefreshing(false);
 

@@ -16,11 +16,11 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.ProgressBar;
 
 import io.github.alessandrojean.mangachecklists.R;
-import io.github.alessandrojean.mangachecklists.constant.JBC;
 import io.github.alessandrojean.mangachecklists.util.LoadingUtils;
 import me.zhanghai.android.materialprogressbar.IndeterminateCircularProgressDrawable;
 
@@ -44,6 +44,8 @@ public abstract class FragmentAbstract extends Fragment{
     protected RecyclerView recyclerView;
     protected FloatingActionButton floatingActionButton;
     protected ProgressBar progressBar;
+    protected View viewError;
+    protected Button buttonTryAgain;
 
     protected Parcelable rvState;
 
@@ -70,6 +72,9 @@ public abstract class FragmentAbstract extends Fragment{
 
         progressBar = getActivity().findViewById(R.id.progress_bar);
         progressBar.setIndeterminateDrawable(new IndeterminateCircularProgressDrawable(getContext()));
+
+        viewError = getActivity().findViewById(R.id.layout_error);
+        buttonTryAgain = getActivity().findViewById(R.id.button_try_again);
 
         swipeRefreshLayout = getActivity().findViewById(R.id.swipe_refresh_layout);
         swipeRefreshLayout.setRefreshing(isReloading);

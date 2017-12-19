@@ -1,5 +1,6 @@
 package io.github.alessandrojean.mangachecklists;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
@@ -102,6 +103,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 title = PlansFragment.TITLE;
                 type = FragmentAbstract.PLAN;
                 break;
+            case R.id.nav_about:
+                Intent intent = new Intent(this, AboutActivity.class);
+                startActivity(intent);
+                return true;
         }
 
         subtitle = "";

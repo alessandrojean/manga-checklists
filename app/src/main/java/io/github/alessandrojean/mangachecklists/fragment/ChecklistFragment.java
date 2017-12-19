@@ -29,7 +29,6 @@ import io.github.alessandrojean.mangachecklists.domain.Checklist;
 import io.github.alessandrojean.mangachecklists.parser.checklist.ChecklistParser;
 import io.github.alessandrojean.mangachecklists.parser.checklist.JBCChecklistParser;
 import io.github.alessandrojean.mangachecklists.parser.checklist.PaniniChecklistParser;
-import io.github.alessandrojean.mangachecklists.constant.JBC;
 import io.github.alessandrojean.mangachecklists.domain.Manga;
 import io.github.alessandrojean.mangachecklists.task.ChecklistRequest;
 
@@ -102,6 +101,12 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
 
         mangasAdapter = new MangasAdapter(getContext(), mangas);
         recyclerView.setAdapter(mangasAdapter);
+
+        buttonTryAgain.setOnClickListener(view -> {
+            progressBar.setVisibility(View.VISIBLE);
+            viewError.setVisibility(View.GONE);
+            retrieveMangas(actualMonth, actualYear);
+        });
     }
 
     @Override
@@ -139,6 +144,7 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
         bundle.putInt(MonthYearPickerDialog.MINIMUM_YEAR, checklistParser.getMinimumYear());
         bundle.putInt(MonthYearPickerDialog.SELECTED_MONTH, actualMonth);
         bundle.putInt(MonthYearPickerDialog.SELECTED_YEAR, actualYear);
+        bundle.putParcelableArrayList(MonthYearPickerDialog.AVAILABLE_CHECKLISTS, checklistParser.getAvailableChecklists());
 
         MonthYearPickerDialog monthYearPickerDialog = new MonthYearPickerDialog();
         monthYearPickerDialog.setArguments(bundle);
@@ -217,6 +223,10 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
                 progressBar.setVisibility(View.GONE);
             }
         }
+        else {
+            progressBar.setVisibility(View.GONE);
+            viewError.setVisibility(View.VISIBLE);
+        }
 
         isReloading = false;
         isLoading = false;
@@ -261,42 +271,40 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() != R.id.action_filter && item.getItemId() != actualFilterId) {
 
-        switch (item.getItemId()) {
-            case R.id.action_filter_jbc:
-                actualFilterId = R.id.action_filter_jbc;
-                break;
-            case R.id.action_filter_panini:
-                actualFilterId = R.id.action_filter_panini;
-                break;
+            switch (item.getItemId()) {
+                case R.id.action_filter_jbc:
+                    actualFilterId = R.id.action_filter_jbc;
+                    break;
+                case R.id.action_filter_panini:
+                    actualFilterId = R.id.action_filter_panini;
+                    break;
+            }
+
+            ((MainActivity) getActivity()).setActualChecklistFilterId(actualFilterId);
+            checklistParser = getCorrectParser(actualFilterId);
+            item.setChecked(true);
+
+            if (isDateAfterMinimum(checklistParser)) {
+                actualMonth = checklistParser.getMinimumMonth();
+                actualYear = checklistParser.getMinimumYear();
+            }
+
+            retrieveMangas(actualMonth, actualYear);
         }
-
-        ChecklistParser oldParser = checklistParser;
-
-        ((MainActivity) getActivity()).setActualChecklistFilterId(actualFilterId);
-        checklistParser = getCorrectParser(actualFilterId);
-        item.setChecked(true);
-
-        if (isDateBeforeMinimum(oldParser, checklistParser)) {
-            actualMonth = checklistParser.getMinimumMonth();
-            actualYear = checklistParser.getMinimumYear();
-        }
-
-        retrieveMangas(actualMonth, actualYear);
 
         return true;
     }
 
-    private boolean isDateBeforeMinimum(ChecklistParser oldParser, ChecklistParser newParser) {
-        Calendar oldDate = Calendar.getInstance();
-        Calendar newDate = Calendar.getInstance();
+    private boolean isDateAfterMinimum(ChecklistParser newParser) {
+        Calendar newMinimumDate = Calendar.getInstance();
         Calendar actualDate = Calendar.getInstance();
 
-        oldDate.set(oldParser.getMinimumYear(), oldParser.getMinimumMonth() - 1, 0);
-        newDate.set(newParser.getMinimumYear(), newParser.getMinimumMonth() - 1, 0);
+        newMinimumDate.set(newParser.getMinimumYear(), newParser.getMinimumMonth() - 1, 0);
         actualDate.set(actualYear, actualMonth, 0);
 
-        return newDate.after(oldDate) && oldDate.equals(actualDate);
+        return newMinimumDate.after(actualDate);
     }
 
     private ChecklistParser getCorrectParser(int filterId) {
