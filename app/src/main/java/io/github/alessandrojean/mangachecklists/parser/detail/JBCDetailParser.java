@@ -26,7 +26,7 @@ public class JBCDetailParser extends DetailParser {
 
     @Override
     protected Manga getManga(Document html) {
-        if (html.selectFirst("div.extra-info-container") != null)
+        if (html.select("div.extra-info-container").first() != null)
             manga = parseMangaNew(html);
         else
             manga = parseMangaOld(html);
@@ -40,9 +40,9 @@ public class JBCDetailParser extends DetailParser {
     }
 
     private Manga parseMangaOld(Document html) {
-        Element subtitle = html.selectFirst("em.text-center.excerpt");
-        Element synopsis = html.selectFirst("div.mb30[itemprop=\"description\"] p");
-        Element headerImage = html.selectFirst("img.colectionHeader.mb10");
+        Element subtitle = html.select("em.text-center.excerpt").first();
+        Element synopsis = html.select("div.mb30[itemprop=\"description\"] p").first();
+        Element headerImage = html.select("img.colectionHeader.mb10").first();
         Elements detailsGroup = html.select("div.mb30[itemprop=\"description\"] p:has(strong)");
 
         manga.setSubtitle(subtitle.text());
@@ -88,9 +88,9 @@ public class JBCDetailParser extends DetailParser {
     }
 
     private Manga parseMangaNew(Document html) {
-        Element subtitle = html.selectFirst("em.text-center.excerpt");
-        Element synopsis = html.selectFirst("div.mb30[itemprop=\"description\"] p");
-        Element headerImage = html.selectFirst("img.colectionHeader.mb10");
+        Element subtitle = html.select("em.text-center.excerpt").first();
+        Element synopsis = html.select("div.mb30[itemprop=\"description\"] p").first();
+        Element headerImage = html.select("img.colectionHeader.mb10").first();
         Elements detailsGroup = html.select("div.extra-info-col-content");
 
         manga.setSubtitle(subtitle.text());
@@ -104,9 +104,9 @@ public class JBCDetailParser extends DetailParser {
         for (Element e : detailsGroup) {
             DetailGroup detailGroup = new DetailGroup();
 
-            Element name = e.selectFirst("h2") == null
-                    ? e.selectFirst("h3")
-                    : e.selectFirst("h2");
+            Element name = e.select("h2").first() == null
+                    ? e.select("h3").first()
+                    : e.select("h2").first();
 
             detailGroup.setName(name.text());
 

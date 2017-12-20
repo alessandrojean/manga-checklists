@@ -33,6 +33,7 @@ import io.github.alessandrojean.mangachecklists.adapter.DetailGroupAdapter;
 import io.github.alessandrojean.mangachecklists.domain.Manga;
 import io.github.alessandrojean.mangachecklists.parser.detail.DetailParser;
 import io.github.alessandrojean.mangachecklists.parser.detail.JBCDetailParser;
+import io.github.alessandrojean.mangachecklists.parser.detail.NewPOPDetailParser;
 import io.github.alessandrojean.mangachecklists.parser.detail.PaniniDetailParser;
 import io.github.alessandrojean.mangachecklists.task.DetailsRequest;
 import io.github.alessandrojean.mangachecklists.util.LoadingUtils;
@@ -136,6 +137,8 @@ public class MangaDetailsActivity extends AppCompatActivity implements View.OnCl
                 return new JBCDetailParser(manga);
             case Manga.TYPE_PANINI:
                 return new PaniniDetailParser(manga);
+            case Manga.TYPE_NEWPOP:
+                return new NewPOPDetailParser(manga);
             default:
                 return null;
         }

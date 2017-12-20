@@ -19,6 +19,7 @@ public class Manga implements Parcelable, Comparable<Manga> {
     public static final String MANGAS_KEY = "mangas_key";
     public static final int TYPE_JBC = 0;
     public static final int TYPE_PANINI = 1;
+    public static final int TYPE_NEWPOP = 2;
 
     private String name;
     private int volume;

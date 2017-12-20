@@ -22,32 +22,30 @@ import java.util.regex.Pattern;
 import io.github.alessandrojean.mangachecklists.domain.Checklist;
 import io.github.alessandrojean.mangachecklists.domain.ChecklistData;
 import io.github.alessandrojean.mangachecklists.domain.Manga;
+import io.github.alessandrojean.mangachecklists.parser.detail.NewPOPDetailParser;
 import io.github.alessandrojean.mangachecklists.parser.detail.PaniniDetailParser;
 
+import static io.github.alessandrojean.mangachecklists.parser.checklist.PaniniChecklistParser.CSS_SELECT;
+
 /**
- * Created by Desktop on 18/12/2017.
+ * Created by Desktop on 19/12/2017.
  */
 
-public class PaniniChecklistParser extends ChecklistParser {
+public class NewPOPChecklistParser extends ChecklistParser {
     private Context context;
     private ArrayList<ChecklistData> checklistDataList;
     private int checklistId;
 
-    public static final String URL = "http://loja.panini.com.br/panini/solucoes/Busca.aspx?i=%d|%d,%d|%d&o=7";
-    public static final String URL_IDS = "https://alessandrojean.github.io/manga-checklists/panini/checklists.json";
-    public static final String CSS_SELECT = "div.product div.item";
+    public static final String URL = "http://www.newpop.com.br/?p=";
+    public static final String URL_IDS = "https://alessandrojean.github.io/manga-checklists/newpop/checklists.json";
+    public static final String CSS_SELECT = "div.wp-caption.aligncenter";
 
-    public static final String PATTERN_INFO = "^(?:Pré-Venda )?(.*?)(?: - (?:Edição|Volume Único)(?: (\\d+))?)?$";
-    public static final String PATTERN_IMAGE = "^(?:.*)/(\\d+)_(\\d{3})x(\\d{3}).(?:.*)$";
+    public static final String PATTERN_INFO = "^(.*?)(?: \\(.*\\))?(?:(?::)? Livro)?(?: #(\\d+)(?: de (?:#)?\\d+(?::)?)?)?(?: \\(.*| —.*| ai.*)?$";
 
-    public static final int TYPE_BRAND = 40;
-    public static final int BRAND_PLANET_MANGA = 1624;
-    public static final int TYPE_CHECKLIST = 44;
+    private static final String CHECKLIST_DATA_KEY = "checklist_data_newpop_key";
+    private static final String CHECKLIST_DATA_OBTAINED_DATE = "checklist_data_obtained_date_newpop_key";
 
-    private static final String CHECKLIST_DATA_KEY = "checklist_data_panini_key";
-    private static final String CHECKLIST_DATA_OBTAINED_DATE = "checklist_data_obtained_date_panini_key";
-
-    public PaniniChecklistParser(Context context) {
+    public NewPOPChecklistParser(Context context) {
         this.context = context;
         checklistDataList = new ArrayList<>();
 
@@ -84,10 +82,10 @@ public class PaniniChecklistParser extends ChecklistParser {
 
         try {
             String json = Jsoup
-                            .connect(URL_IDS)
-                            .ignoreContentType(true)
-                            .execute()
-                            .body();
+                    .connect(URL_IDS)
+                    .ignoreContentType(true)
+                    .execute()
+                    .body();
 
             ChecklistData[] checklistDataArray = new Gson().fromJson(json, ChecklistData[].class);
 
@@ -120,13 +118,12 @@ public class PaniniChecklistParser extends ChecklistParser {
         checklistDataList.addAll(hawkList);
     }
 
-
     @Override
     protected String getUrl(int month, int year) {
         obtainChecklistIdsFromAPI();
 
         checklistId = getChecklistId(month, year);
-        return String.format(URL, TYPE_BRAND, BRAND_PLANET_MANGA, TYPE_CHECKLIST, checklistId);
+        return URL + checklistId;
     }
 
     private int getChecklistId(int month, int year) {
@@ -141,17 +138,17 @@ public class PaniniChecklistParser extends ChecklistParser {
 
     @Override
     public int getMinimumMonth() {
-        return 2;
+        return 3;
     }
 
     @Override
     public int getMinimumYear() {
-        return 2012;
+        return 2016;
     }
 
     @Override
     public String getChecklistKey() {
-        return "panini_manga_list_key_";
+        return "newpop_manga_list_key_";
     }
 
     @Override
@@ -168,12 +165,12 @@ public class PaniniChecklistParser extends ChecklistParser {
 
         Elements list = html.select(CSS_SELECT);
 
-        PaniniDetailParser parser;
+        NewPOPDetailParser parser;
 
         for (Element e : list) {
-            Manga m = getManga(e, month, year);
+            Manga m = getManga(e);
 
-            parser = new PaniniDetailParser(m);
+            parser = new NewPOPDetailParser(m);
             m = parser.getDetails();
 
             mangas.add(m);
@@ -182,44 +179,25 @@ public class PaniniChecklistParser extends ChecklistParser {
         return mangas;
     }
 
-    private Manga getManga(Element e, int month, int year) {
+    private Manga getManga(Element e) {
         Manga manga = new Manga();
-        Element image = e.select("div.image a img").first();
-        Element info = e.select("div.description h4 a").first();
-        Element price = e.select("div.description p.price").first();
 
-        manga.setThumbnailUrl(getBetterThumbnail(image.attr("src")));
-        manga.setPrice(Double.parseDouble(price.text().replace("R$", "").replace(",",".")));
-        manga.setUrl(info.attr("href"));
+        manga.setThumbnailUrl(e.select("img").attr("src"));
 
         Pattern pattern = Pattern.compile(PATTERN_INFO);
-        Matcher matcher = pattern.matcher(info.text());
+        Matcher matcher = pattern.matcher(e.select("p.wp-caption-text").text());
 
         if (matcher.matches()) {
             manga.setName(matcher.group(1));
             manga.setVolume(matcher.group(2) == null ? -1 : Integer.parseInt(matcher.group(2)));
         }
 
-        Log.i("thumbnail-url", manga.getThumbnailUrl());
+        if (e.select("a").first() != null)
+            if (e.select("a").first().attr("href").indexOf(".jpg") == -1)
+                manga.setUrl(e.select("a").attr("href"));
 
-        manga.setType(Manga.TYPE_PANINI);
+        manga.setType(Manga.TYPE_NEWPOP);
 
         return manga;
-    }
-
-    private String getBetterThumbnail(String thumbnailUrl) {
-        Pattern pattern = Pattern.compile(PATTERN_IMAGE);
-        Matcher matcher = pattern.matcher(thumbnailUrl);
-
-        if (matcher.matches()) {
-            int imageId = Integer.parseInt(matcher.group(1));
-
-            String newThumbnail = thumbnailUrl
-                                    .replace(matcher.group(1), String.valueOf(imageId + 1))
-                                    .replace("200x200", "520x520");
-            return newThumbnail;
-        }
-
-        return thumbnailUrl;
     }
 }

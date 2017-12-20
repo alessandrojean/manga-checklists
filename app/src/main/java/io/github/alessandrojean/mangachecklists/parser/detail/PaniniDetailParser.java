@@ -26,7 +26,7 @@ public class PaniniDetailParser extends DetailParser {
 
     @Override
     protected Manga getManga(Document html) {
-        Element synopsis = html.selectFirst("div.details-description p");
+        Element synopsis = html.select("div.details-description p").first();
         Elements details = html.select("div.description ul li");
 
         if (synopsis != null)
@@ -42,10 +42,10 @@ public class PaniniDetailParser extends DetailParser {
         for (Element li : details) {
             Detail detail = new Detail();
 
-            Element detailName = li.selectFirst("strong");
+            Element detailName = li.select("strong").first();
             detail.setName(detailName.text().replace(":", ""));
 
-            Element a = li.selectFirst("a");
+            Element a = li.select("a").first();
             if (a != null)
                 detail.setDetail(a.text());
             else {

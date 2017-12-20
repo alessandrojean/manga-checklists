@@ -28,6 +28,7 @@ import io.github.alessandrojean.mangachecklists.adapter.MangasAdapter;
 import io.github.alessandrojean.mangachecklists.domain.Checklist;
 import io.github.alessandrojean.mangachecklists.parser.checklist.ChecklistParser;
 import io.github.alessandrojean.mangachecklists.parser.checklist.JBCChecklistParser;
+import io.github.alessandrojean.mangachecklists.parser.checklist.NewPOPChecklistParser;
 import io.github.alessandrojean.mangachecklists.parser.checklist.PaniniChecklistParser;
 import io.github.alessandrojean.mangachecklists.domain.Manga;
 import io.github.alessandrojean.mangachecklists.task.ChecklistRequest;
@@ -273,14 +274,7 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() != R.id.action_filter && item.getItemId() != actualFilterId) {
 
-            switch (item.getItemId()) {
-                case R.id.action_filter_jbc:
-                    actualFilterId = R.id.action_filter_jbc;
-                    break;
-                case R.id.action_filter_panini:
-                    actualFilterId = R.id.action_filter_panini;
-                    break;
-            }
+            actualFilterId = item.getItemId();
 
             ((MainActivity) getActivity()).setActualChecklistFilterId(actualFilterId);
             checklistParser = getCorrectParser(actualFilterId);
@@ -313,6 +307,8 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
                 return new JBCChecklistParser();
             case R.id.action_filter_panini:
                 return new PaniniChecklistParser(getContext());
+            case R.id.action_filter_newpop:
+                return new NewPOPChecklistParser(getContext());
             default:
                 return null;
         }

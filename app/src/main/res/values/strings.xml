@@ -10,6 +10,7 @@
 
     <string name="action_filter_jbc">Editora JBC</string>
     <string name="action_filter_panini">Panini Comics</string>
+    <string name="action_filter_newpop">NewPOP Editora</string>
 
     <string name="nav_checklists">Checklists</string>
     <string name="nav_plans">Assinaturas</string>

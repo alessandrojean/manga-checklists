@@ -17,11 +17,8 @@ parse the data exists, but it's not the main purpose.
 
 Available at moment:
 - [Editora JBC](https://mangasjbc.com.br/): checklists and plans;
-- [Panini Comics](https://loja.panini.com.br/): checklists.
-
-Future implementations:
-
-- [NewPOP Editora](http://www.newpop.com.br).
+- [Panini Comics](https://loja.panini.com.br/): checklists;
+- [NewPOP Editora](http://www.newpop.com.br): checklists.
 
 ## License
 
