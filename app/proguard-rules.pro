@@ -21,3 +21,5 @@
 #-renamesourcefileattribute SourceFile
 
 -dontwarn com.squareup.okhttp.**
+
+-keep class org.jsoup.**
