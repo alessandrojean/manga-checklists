@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.NumberPicker;
 
+import java.time.Month;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -18,6 +19,7 @@ import java.util.List;
 import io.github.alessandrojean.mangachecklists.R;
 import io.github.alessandrojean.mangachecklists.domain.Checklist;
 import io.github.alessandrojean.mangachecklists.domain.ChecklistData;
+import io.github.alessandrojean.mangachecklists.parser.checklist.ChecklistParser;
 
 /**
  * Created by Desktop on 15/12/2017.
@@ -32,11 +34,27 @@ public class MonthYearPickerDialog extends DialogFragment implements NumberPicke
     private ArrayList<ChecklistData> availableChecklists;
 
     public static final String KEY = "month_year_picker_dialog";
-    public static final String MINIMUM_MONTH = "minimum_month";
-    public static final String MINIMUM_YEAR = "minimum_year";
-    public static final String SELECTED_MONTH = "selected_month";
-    public static final String SELECTED_YEAR = "selected_year";
-    public static final String AVAILABLE_CHECKLISTS = "available_checklists_key";
+    private static final String ARG_MINIMUM_MONTH = "arg_minimum_month";
+    private static final String ARG_MINIMUM_YEAR = "arg_minimum_year";
+    private static final String ARG_SELECTED_MONTH = "arg_selected_month";
+    private static final String ARG_SELECTED_YEAR = "arg_selected_year";
+    private static final String ARG_AVAILABLE_CHECKLISTS = "arg_available_checklists_key";
+
+    public MonthYearPickerDialog() {
+
+    }
+
+    public static MonthYearPickerDialog newInstance(ChecklistParser parser, int monthSelected, int yearSelected) {
+        MonthYearPickerDialog monthYearPickerDialog = new MonthYearPickerDialog();
+        Bundle bundle = new Bundle();
+        bundle.putInt(ARG_MINIMUM_MONTH, parser.getMinimumMonth());
+        bundle.putInt(ARG_MINIMUM_YEAR, parser.getMinimumYear());
+        bundle.putInt(ARG_SELECTED_MONTH, monthSelected);
+        bundle.putInt(ARG_SELECTED_YEAR, yearSelected);
+        bundle.putParcelableArrayList(ARG_AVAILABLE_CHECKLISTS, parser.getAvailableChecklists());
+        monthYearPickerDialog.setArguments(bundle);
+        return monthYearPickerDialog;
+    }
 
 
     @Override
@@ -55,28 +73,17 @@ public class MonthYearPickerDialog extends DialogFragment implements NumberPicke
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
         Calendar calendar = Calendar.getInstance();
-        int month = getArguments().getInt(SELECTED_MONTH, calendar.get(Calendar.MONTH) + 1);
+        int month = getArguments().getInt(ARG_SELECTED_MONTH, calendar.get(Calendar.MONTH) + 1);
         int maxYear = calendar.get(Calendar.YEAR);
-        int year = getArguments().getInt(SELECTED_YEAR, maxYear);
-        int minMonth = year == getArguments().getInt(MINIMUM_YEAR)
-                ? getArguments().getInt(MINIMUM_MONTH)
+        int year = getArguments().getInt(ARG_SELECTED_YEAR, maxYear);
+        int minMonth = year == getArguments().getInt(ARG_MINIMUM_YEAR)
+                ? getArguments().getInt(ARG_MINIMUM_MONTH)
                 : 1;
 
-        availableChecklists = getArguments().getParcelableArrayList(AVAILABLE_CHECKLISTS);
+        availableChecklists = getArguments().getParcelableArrayList(ARG_AVAILABLE_CHECKLISTS);
 
         View dialog = inflater.inflate(R.layout.fragment_dialog_date, null);
         monthPicker = dialog.findViewById(R.id.picker_month);
-
-        //monthPicker.setMinValue(minMonth);
-        //monthPicker.setMaxValue(12);
-        //monthPicker.setValue(month);
-        //monthPicker.setWrapSelectorWheel(false);
-
-        //yearPicker.setMinValue(getArguments().getInt(MINIMUM_YEAR, 2013));
-        //yearPicker.setMaxValue(maxYear);
-       // yearPicker.setValue(year);
-        //yearPicker.setOnValueChangedListener(this);
-        //yearPicker.setWrapSelectorWheel(false);
 
         startYearNumberPicker(dialog);
         selectMonthAndYear(month, year);
@@ -120,8 +127,6 @@ public class MonthYearPickerDialog extends DialogFragment implements NumberPicke
         for (int i = 0; i < checklistData.getChecklists().size(); i++) {
             if (month == checklistData.getChecklists().get(i).getMonth())
                 monthPosition = i;
-            //else if (month < checklistData.getChecklists().get(i).getMonth())
-            //    monthPosition = i;
         }
 
         int oldValue = yearPicker.getValue();
@@ -180,31 +185,5 @@ public class MonthYearPickerDialog extends DialogFragment implements NumberPicke
         monthPicker.setMinValue(0);
         monthPicker.setWrapSelectorWheel(false);
         monthPicker.setValue(monthToSelect);
-
-
-        //int actualMonth = monthPicker.getValue();
-
-        //ChecklistData minimumYea;
-
-
-        /*int minimumYear = getArguments().getInt(MINIMUM_YEAR);
-        int minimumMonth = getArguments().getInt(MINIMUM_MONTH);
-
-        if (newVal == minimumYear) {
-            monthPicker.setMinValue(minimumMonth);
-            monthPicker.setMaxValue(12);
-
-            if (actualMonth >= minimumMonth)
-                monthPicker.setValue(actualMonth);
-        }
-        else {
-            monthPicker.setMinValue(1);
-            monthPicker.setMaxValue(12);
-
-            monthPicker.setValue(actualMonth);
-        }*/
-
-       // yearPicker.setWrapSelectorWheel(false);
-      //  monthPicker.setWrapSelectorWheel(false);
     }
 }

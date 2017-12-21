@@ -2,7 +2,6 @@ package io.github.alessandrojean.mangachecklists;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
@@ -13,13 +12,12 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.Menu;
 import android.view.MenuItem;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
 import io.github.alessandrojean.mangachecklists.fragment.ChecklistFragment;
-import io.github.alessandrojean.mangachecklists.fragment.FragmentAbstract;
 import io.github.alessandrojean.mangachecklists.fragment.PlansFragment;
 
 /**
@@ -27,20 +25,25 @@ import io.github.alessandrojean.mangachecklists.fragment.PlansFragment;
  */
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
-    String title = ChecklistFragment.TITLE;
-    String subtitle = "";
 
+    // Save to bundle.
+    private static final String TOOLBAR_TITLE_KEY = "toolbar_title_key";
+    private static final String TOOLBAR_SUBTITLE_KEY = "toolbar_subtitle_key";
+    private static final String CHECKLIST_ACTUAL_MONTH_KEY = "checklist_actual_month_key";
+    private static final String CHECKLIST_ACTUAL_YEAR_KEY = "checklist_actual_year_key";
+    private static final String CHECKLIST_ACTUAL_FILTER_ID = "checklist_actual_filter_id_key";
+
+    // Views.
     Toolbar toolbar;
     DrawerLayout drawerLayout;
     NavigationView navigationView;
 
+    // Class variables.
     private int checklistActualMonth = 0;
     private int checklistActualYear = 0;
     private int checklistActualFilterId = R.id.action_filter_jbc;
-
-    public static final String CHECKLIST_ACTUAL_MONTH_KEY = "checklist_actual_month_key";
-    public static final String CHECKLIST_ACTUAL_YEAR_KEY = "checklist_actual_year_key";
-    public static final String CHECKLIST_ACTUAL_FILTER_ID = "checklist_actual_filter_id_key";
+    private String title = ChecklistFragment.TITLE;
+    private String subtitle = "";
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -56,8 +59,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         initDrawerNavigation();
 
         if (savedInstanceState != null) {
-            title = savedInstanceState.getString(FragmentAbstract.TITLE, title);
-            subtitle = savedInstanceState.getString(FragmentAbstract.SUBTITLE, subtitle);
+            title = savedInstanceState.getString(TOOLBAR_TITLE_KEY, title);
+            subtitle = savedInstanceState.getString(TOOLBAR_SUBTITLE_KEY, subtitle);
             checklistActualMonth = savedInstanceState.getInt(CHECKLIST_ACTUAL_MONTH_KEY);
             checklistActualYear = savedInstanceState.getInt(CHECKLIST_ACTUAL_YEAR_KEY);
             checklistActualFilterId = savedInstanceState.getInt(CHECKLIST_ACTUAL_FILTER_ID);
@@ -65,9 +68,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         Log.d("date-oncreate-bif", checklistActualMonth + "/" + checklistActualYear);
 
-        if (getSupportFragmentManager().findFragmentByTag(FragmentAbstract.KEY) == null) {
+        if (getSupportFragmentManager().findFragmentByTag(ChecklistFragment.KEY) == null) {
             setNowDateToChecklist();
-            switchFragment(new ChecklistFragment(), FragmentAbstract.CHECKLIST);
+            switchFragment(
+                    ChecklistFragment.newInstance(
+                            checklistActualMonth,
+                            checklistActualYear,
+                            checklistActualFilterId
+                    ),
+                    ChecklistFragment.KEY
+            );
         }
 
         Log.d("date-oncreate-aif", checklistActualMonth + "/" + checklistActualYear);
@@ -90,18 +100,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         Fragment fragment = null;
-        int type = 0;
+        String key = null;
 
         switch (item.getItemId()) {
             case R.id.nav_checklist:
-                fragment = new ChecklistFragment();
+                fragment = ChecklistFragment.newInstance(
+                        checklistActualMonth,
+                        checklistActualYear,
+                        checklistActualFilterId
+                );
+                key = ChecklistFragment.KEY;
                 title = ChecklistFragment.TITLE;
-                type = FragmentAbstract.CHECKLIST;
+                showDateInToolbar();
                 break;
             case R.id.nav_plans:
                 fragment = new PlansFragment();
+                key = PlansFragment.KEY;
                 title = PlansFragment.TITLE;
-                type = FragmentAbstract.PLAN;
+                subtitle = "";
                 break;
             case R.id.nav_about:
                 Intent intent = new Intent(this, AboutActivity.class);
@@ -109,30 +125,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return true;
         }
 
-        subtitle = "";
+        switchFragment(fragment, key);
 
         toolbar.setTitle(title);
         toolbar.setSubtitle(subtitle);
-        switchFragment(fragment, type);
 
         drawerLayout.closeDrawer(GravityCompat.START);
 
         return true;
     }
 
-    private void switchFragment(Fragment fragment, int type) {
-        Bundle bundle = new Bundle();
-        bundle.putInt(FragmentAbstract.TYPE_KEY, type);
-        bundle.putInt(CHECKLIST_ACTUAL_MONTH_KEY, checklistActualMonth);
-        bundle.putInt(CHECKLIST_ACTUAL_YEAR_KEY, checklistActualYear);
-        bundle.putInt(CHECKLIST_ACTUAL_FILTER_ID, checklistActualFilterId);
-
-        fragment.setArguments(bundle);
-
+    private void switchFragment(Fragment fragment, String key) {
         getSupportFragmentManager()
                 .beginTransaction()
-                //.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-                .replace(R.id.rl_container, fragment, FragmentAbstract.KEY)
+                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                .replace(R.id.rl_container, fragment, key)
                 .commit();
     }
 
@@ -142,13 +149,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toolbar.setTitle(title);
         toolbar.setSubtitle(subtitle);
 
-
+        Log.d("MangaChecklists", "subtitle=" + subtitle);
     }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        outState.putString(FragmentAbstract.TITLE, title);
-        outState.putString(FragmentAbstract.SUBTITLE, subtitle);
+        outState.putString(TOOLBAR_TITLE_KEY, title);
+        outState.putString(TOOLBAR_SUBTITLE_KEY, toolbar.getSubtitle().toString());
         outState.putInt(CHECKLIST_ACTUAL_MONTH_KEY, checklistActualMonth);
         outState.putInt(CHECKLIST_ACTUAL_YEAR_KEY, checklistActualYear);
         outState.putInt(CHECKLIST_ACTUAL_FILTER_ID, checklistActualFilterId);
@@ -158,8 +165,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        title = savedInstanceState.getString(FragmentAbstract.TITLE, title);
-        subtitle = savedInstanceState.getString(FragmentAbstract.SUBTITLE, subtitle);
+        title = savedInstanceState.getString(TOOLBAR_TITLE_KEY, title);
+        subtitle = savedInstanceState.getString(TOOLBAR_SUBTITLE_KEY, subtitle);
         checklistActualMonth = savedInstanceState.getInt(CHECKLIST_ACTUAL_MONTH_KEY);
         checklistActualYear = savedInstanceState.getInt(CHECKLIST_ACTUAL_YEAR_KEY);
         checklistActualFilterId = savedInstanceState.getInt(CHECKLIST_ACTUAL_FILTER_ID);
@@ -183,15 +190,32 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
             checklistActualMonth = calendar.get(Calendar.MONTH) + 1;
             checklistActualYear = calendar.get(Calendar.YEAR);
+
+            showDateInToolbar();
         }
     }
 
     public void setActualChecklist(int month, int year) {
         this.checklistActualMonth = month;
         this.checklistActualYear = year;
+
+        showDateInToolbar();
     }
 
     public void setActualChecklistFilterId(int filterId) {
         this.checklistActualFilterId = filterId;
+    }
+
+    private void showDateInToolbar() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(checklistActualYear, checklistActualMonth, 0);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM/yyyy");
+        String formatted = dateFormat.format(calendar.getTime());
+
+        formatted = Character.toUpperCase(formatted.charAt(0)) + formatted.substring(1);
+
+        toolbar.setSubtitle(formatted);
+        subtitle = formatted;
     }
 }

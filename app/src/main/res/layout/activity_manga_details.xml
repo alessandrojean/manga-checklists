@@ -63,7 +63,6 @@
                     android:scaleType="fitCenter"
                     android:adjustViewBounds="true"
                     android:layout_centerHorizontal="true"
-                    android:fitsSystemWindows="true"
                     android:src="@drawable/example_cover"/>
 
             </RelativeLayout>

@@ -38,7 +38,7 @@ public class JBCChecklistParser extends ChecklistParser {
     public static final String CSS_SELECT_BEFORE_MARCH_2016 = "ul.checklist li";
     public static final String CSS_SELECT_AFTER_MARCH_2016 = "ul.checklist li.adjust-font-size a";
 
-    public static final String PATTERN_INFO = "^(.*?)(?: #(\\d+))?(?: (?:–|-) (\\d+)ª temp.)?(?: (?:–|-) (\\d+)\\/(\\d+))?$";
+    public static final String PATTERN_INFO = "^(.*?)(?: #(\\d+))?(?: (?:–|-) (\\d+)ª (?:temp.|temporada))?(?: (?:–|-) (\\d+)\\/(\\d+))?$";
     public static final String PATTERN_IMAGE = "^(?:.*)(\\d{3})x(\\d{3}).(?:.*)$";
 
     public JBCChecklistParser() {
@@ -118,14 +118,19 @@ public class JBCChecklistParser extends ChecklistParser {
 
         JBCDetailParser parser;
 
-        for (Element e : list) {
+        for (int i = 0; i < list.size(); i++) {
             if (isCanceled())
                 return null;
+
+            Element e = list.get(i);
 
             Manga m = getManga(e, month, year);
 
             parser = new JBCDetailParser(m);
             m = parser.getDetails();
+
+            if (onMangaLoaded != null)
+                onMangaLoaded.onMangaLoaded(m, i, list.size());
 
             mangas.add(m);
         }

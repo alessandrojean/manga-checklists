@@ -1,11 +1,17 @@
 package io.github.alessandrojean.mangachecklists.fragment;
 
 import android.app.DatePickerDialog;
+import android.content.res.Configuration;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -13,9 +19,10 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.DatePicker;
-
-import com.orhanobut.hawk.Hawk;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -25,110 +32,172 @@ import java.util.List;
 import io.github.alessandrojean.mangachecklists.MainActivity;
 import io.github.alessandrojean.mangachecklists.R;
 import io.github.alessandrojean.mangachecklists.adapter.MangasAdapter;
-import io.github.alessandrojean.mangachecklists.domain.Checklist;
+import io.github.alessandrojean.mangachecklists.domain.Manga;
 import io.github.alessandrojean.mangachecklists.parser.checklist.ChecklistParser;
 import io.github.alessandrojean.mangachecklists.parser.checklist.JBCChecklistParser;
 import io.github.alessandrojean.mangachecklists.parser.checklist.NewPOPChecklistParser;
 import io.github.alessandrojean.mangachecklists.parser.checklist.PaniniChecklistParser;
-import io.github.alessandrojean.mangachecklists.domain.Manga;
 import io.github.alessandrojean.mangachecklists.task.ChecklistRequest;
+import me.zhanghai.android.materialprogressbar.IndeterminateCircularProgressDrawable;
 
-/**
- * Created by Desktop on 16/12/2017.
- */
 
-public class ChecklistFragment extends FragmentAbstract implements DatePickerDialog.OnDateSetListener, View.OnClickListener {
+public class ChecklistFragment extends Fragment implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener, DatePickerDialog.OnDateSetListener {
     public static final String TITLE = "Checklist";
+    public static final String KEY = "fragment";
 
-    private static final String ACTUAL_MONTH_KEY = "actual_month_key";
-    private static final String ACTUAL_YEAR_KEY = "actual_year_key";
-    private static final String ACTUAL_FILTER_ID_KEY = "actual_filter_id_key";
+    // Arguments from bundle.
+    private static final String ARG_MONTH = "arg_month";
+    private static final String ARG_YEAR = "arg_year";
+    private static final String ARG_FILTER = "arg_filter";
+    private static final String ARG_VIEW_VISIBLE = "arg_view_visible";
+    private static final String ARG_REFRESHING = "arg_refreshing";
+    private static final String ARG_MANGA_LIST = "arg_manga_list";
 
+    // Views available to show.
+    public static final int STATE_CONTENT = 0;
+    public static final int STATE_ERROR = 1;
+    public static final int STATE_LOADING = 2;
+
+    // Class variables.
+    private int mMonth;
+    private int mYear;
+    private int mFilter;
+    private int mViewVisible;
+    private boolean mRefreshing;
+    private ArrayList<Manga> mMangaList;
+
+    private Parcelable rvState;
+
+    // Views to show.
+    private View viewContent;
+    private View viewError;
+    private View viewLoading;
+
+    // Views in viewContent
+    private SwipeRefreshLayout swipeRefreshLayout;
+    private RecyclerView recyclerView;
+    private FloatingActionButton floatingActionButton;
+    private TextView textViewEmpty;
+    private MenuItem menuItemFilter;
+
+    // Views in viewError
+    private Button buttonTryAgain;
+
+    // Views in viewLoading
+    private ProgressBar progressBarLoading;
+
+    // Another
     private MangasAdapter mangasAdapter;
-
-    private List<Manga> mangas;
-    private int actualMonth;
-    private int actualYear;
-    private int actualFilterId;
-
     private ChecklistRequest checklistRequest;
     private ChecklistParser checklistParser;
 
     public ChecklistFragment() {
-        super();
+        // Required empty public constructor
+        mViewVisible = STATE_CONTENT;
+        mMangaList = new ArrayList<>();
+    }
 
-        this.mangas = new ArrayList<>();
+    public static ChecklistFragment newInstance(int month, int year, int filter) {
+        ChecklistFragment fragment = new ChecklistFragment();
+        Bundle args = new Bundle();
+        args.putInt(ARG_MONTH, month);
+        args.putInt(ARG_YEAR, year);
+        args.putInt(ARG_FILTER, filter);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mMonth = getArguments().getInt(ARG_MONTH);
+            mYear = getArguments().getInt(ARG_YEAR);
+            mFilter = getArguments().getInt(ARG_FILTER);
+        }
     }
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        actualMonth = getArguments().getInt(MainActivity.CHECKLIST_ACTUAL_MONTH_KEY);
-        actualYear = getArguments().getInt(MainActivity.CHECKLIST_ACTUAL_YEAR_KEY);
-        actualFilterId = getArguments().getInt(MainActivity.CHECKLIST_ACTUAL_FILTER_ID, R.id.action_filter_jbc);
-        checklistParser = getCorrectParser(actualFilterId);
-
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                initDateDialog();
-            }
-        });
-
-        buttonTryAgain.setOnClickListener(this);
-
-        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                isReloading = true;
-
-                retrieveMangas(actualMonth, actualYear);
-            }
-        });
-
-        actualMonth = getArguments().getInt(MainActivity.CHECKLIST_ACTUAL_MONTH_KEY);
-        actualYear = getArguments().getInt(MainActivity.CHECKLIST_ACTUAL_YEAR_KEY);
-
         if (savedInstanceState != null) {
-            actualMonth = savedInstanceState.getInt(ACTUAL_MONTH_KEY);
-            actualYear = savedInstanceState.getInt(ACTUAL_YEAR_KEY);
-            actualFilterId = savedInstanceState.getInt(ACTUAL_FILTER_ID_KEY);
-            checklistParser = getCorrectParser(actualFilterId);
+            mMonth = savedInstanceState.getInt(ARG_MONTH);
+            mYear = savedInstanceState.getInt(ARG_YEAR);
+            mFilter = savedInstanceState.getInt(ARG_FILTER);
+            mViewVisible = savedInstanceState.getInt(ARG_VIEW_VISIBLE);
+            mRefreshing = savedInstanceState.getBoolean(ARG_REFRESHING);
+            mMangaList = savedInstanceState.getParcelableArrayList(ARG_MANGA_LIST);
         }
+
+        showCorrectView(mViewVisible);
+        swipeRefreshLayout.setRefreshing(mRefreshing);
+
+        mangasAdapter = new MangasAdapter(getContext(), mMangaList);
+        recyclerView.setAdapter(mangasAdapter);
+
+        checklistParser = getCorrectParser(mFilter);
+
+        if (mMangaList.size() == 0 || mRefreshing || mViewVisible == STATE_LOADING)
+            retrieveMangas(mMonth, mYear);
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        setHasOptionsMenu(true);
+        return inflater.inflate(R.layout.fragment_checklist, container, false);
+    }
 
-        mangasAdapter = new MangasAdapter(getContext(), mangas);
-        recyclerView.setAdapter(mangasAdapter);
+    @Override
+    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-        buttonTryAgain.setOnClickListener(view -> {
-            progressBar.setVisibility(View.VISIBLE);
-            viewError.setVisibility(View.GONE);
-            retrieveMangas(actualMonth, actualYear);
-        });
+        viewContent = view.findViewById(R.id.layout_content);
+
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setOnRefreshListener(this);
+
+        recyclerView = view.findViewById(R.id.recycler_view);
+
+        GridLayoutManager gridLayoutManager;
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
+            gridLayoutManager = new GridLayoutManager(getContext(), 2);
+        else
+            gridLayoutManager = new GridLayoutManager(getContext(), 4);
+
+        recyclerView.setLayoutManager(gridLayoutManager);
+
+        recyclerView.setItemAnimator(new DefaultItemAnimator());
+
+        floatingActionButton = view.findViewById(R.id.fab);
+        floatingActionButton.setOnClickListener(this);
+
+        textViewEmpty = view.findViewById(R.id.text_empty);
+
+        viewError = view.findViewById(R.id.layout_error);
+
+        buttonTryAgain = view.findViewById(R.id.button_try_again);
+        buttonTryAgain.setOnClickListener(this);
+
+        viewLoading = view.findViewById(R.id.layout_loading);
+
+        progressBarLoading = view.findViewById(R.id.progress_bar);
+        progressBarLoading.setIndeterminateDrawable(new IndeterminateCircularProgressDrawable(getContext()));
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        rvState();
     }
 
     @Override
     public void onResume() {
         super.onResume();
 
-        initList();
-        //if (isLoading || isReloading)
-            retrieveMangas(actualMonth, actualYear);
-        //else
-            //retrieveMangas();
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putInt(ACTUAL_MONTH_KEY, actualMonth);
-        outState.putInt(ACTUAL_YEAR_KEY, actualYear);
-        outState.putInt(ACTUAL_FILTER_ID_KEY, actualFilterId);
-        super.onSaveInstanceState(outState);
+        if (rvState != null)
+            recyclerView.getLayoutManager().onRestoreInstanceState(rvState);
     }
 
     @Override
@@ -141,119 +210,15 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
         }
     }
 
-    protected void initDateDialog() {
-        Bundle bundle = new Bundle();
-        bundle.putInt(MonthYearPickerDialog.MINIMUM_MONTH, checklistParser.getMinimumMonth());
-        bundle.putInt(MonthYearPickerDialog.MINIMUM_YEAR, checklistParser.getMinimumYear());
-        bundle.putInt(MonthYearPickerDialog.SELECTED_MONTH, actualMonth);
-        bundle.putInt(MonthYearPickerDialog.SELECTED_YEAR, actualYear);
-        bundle.putParcelableArrayList(MonthYearPickerDialog.AVAILABLE_CHECKLISTS, checklistParser.getAvailableChecklists());
-
-        MonthYearPickerDialog monthYearPickerDialog = new MonthYearPickerDialog();
-        monthYearPickerDialog.setArguments(bundle);
-        monthYearPickerDialog.setListener(this);
-        monthYearPickerDialog.show(getActivity().getSupportFragmentManager(), MonthYearPickerDialog.KEY);
-    }
-
     @Override
-    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
-        if (actualYear != year || actualMonth != month) {
-            actualMonth = month;
-            actualYear = year;
-
-            ((MainActivity) getActivity()).setActualChecklist(actualMonth, actualYear);
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle("");
-
-            isLoading = true;
-            retrieveMangas(month, year);
-        }
-    }
-
-    private void initList() {
-        Hawk.init(getContext()).build();
-
-        if (!Hawk.contains(checklistParser.getChecklistKey() + actualMonth + actualYear))
-            Hawk.put(checklistParser.getChecklistKey() + actualMonth + actualYear, mangas);
-
-        List<Manga> hawkChecklist = Hawk.get(checklistParser.getChecklistKey() + actualMonth + actualYear);
-        mangas.addAll(hawkChecklist);
-    }
-
-    private void retrieveMangas() {
-        actualMonth = getArguments().getInt(MainActivity.CHECKLIST_ACTUAL_MONTH_KEY);
-        actualYear = getArguments().getInt(MainActivity.CHECKLIST_ACTUAL_YEAR_KEY);
-
-        retrieveMangas(actualMonth, actualYear);
-    }
-
-    private void retrieveMangas(int month, int year) {
-        if (!isReloading && Hawk.contains(checklistParser.getChecklistKey() + month + year)) {
-            List<Manga> hawkList = Hawk.get(checklistParser.getChecklistKey() + month + year);
-
-            if (hawkList.size() != 0) {
-                updateChecklist(hawkList, false);
-                return;
-            }
-        }
-
-        if (!isReloading)
-            crossfade(true);
-
-        //checklistRequest = new ChecklistRequest(this, month, year, new JBCChecklistParser());
-        //checklistRequest = new ChecklistRequest(this, month, year, new PaniniChecklistParser(getContext()));
-        checklistRequest = new ChecklistRequest(this, month, year, checklistParser);
-        checklistRequest.execute();
-    }
-
-    public void updateChecklist(List<Manga> mangas, boolean animate) {
-        if (mangas != null) {
-            this.mangas.clear();
-            this.mangas.addAll(mangas);
-
-            Hawk.put(checklistParser.getChecklistKey() + actualMonth + actualYear, mangas);
-            mangasAdapter.notifyDataSetChanged();
-            swipeRefreshLayout.setRefreshing(false);
-
-            GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
-            layoutManager.scrollToPositionWithOffset(0, 0);
-
-            showDateInToolbar();
-            if (animate && !isReloading)
-                crossfade(false);
-            else {
-                floatingActionButton.setVisibility(View.VISIBLE);
-                swipeRefreshLayout.setVisibility(View.VISIBLE);
-                progressBar.setVisibility(View.GONE);
-            }
-        }
-        else {
-            progressBar.setVisibility(View.GONE);
-            floatingActionButton.setVisibility(View.GONE);
-            swipeRefreshLayout.setVisibility(View.GONE);
-            viewError.setVisibility(View.VISIBLE);
-        }
-
-        isReloading = false;
-        isLoading = false;
-    }
-
-    private void showDateInToolbar() {
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(actualYear, actualMonth, 0);
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM/yyyy");
-        String formatted = dateFormat.format(calendar.getTime());
-
-        formatted = Character.toUpperCase(formatted.charAt(0)) + formatted.substring(1);
-
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(formatted);
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
-        return super.onCreateView(inflater, container, savedInstanceState);
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putInt(ARG_MONTH, mMonth);
+        outState.putInt(ARG_YEAR, mYear);
+        outState.putInt(ARG_FILTER, mFilter);
+        outState.putInt(ARG_VIEW_VISIBLE, mViewVisible);
+        outState.putBoolean(ARG_REFRESHING, mRefreshing);
+        outState.putParcelableArrayList(ARG_MANGA_LIST, mMangaList);
+        super.onSaveInstanceState(outState);
     }
 
     @Override
@@ -266,33 +231,40 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
     public void onPrepareOptionsMenu(Menu menu) {
         super.onPrepareOptionsMenu(menu);
 
-        SubMenu menuFilter = menu.getItem(0).getSubMenu();
+        menuItemFilter = menu.getItem(0);
+
+        SubMenu menuFilter = menuItemFilter.getSubMenu();
 
         for (int i = 0; i < menuFilter.size(); i++)
-            if (menuFilter.getItem(i).getItemId() == actualFilterId)
+            if (menuFilter.getItem(i).getItemId() == mFilter)
                 menuFilter.getItem(i).setChecked(true);
-
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() != R.id.action_filter && item.getItemId() != actualFilterId) {
+        if (item.getItemId() != R.id.action_filter && item.getItemId() != mFilter) {
 
-            actualFilterId = item.getItemId();
+            mFilter = item.getItemId();
 
-            ((MainActivity) getActivity()).setActualChecklistFilterId(actualFilterId);
-            checklistParser = getCorrectParser(actualFilterId);
+            ((MainActivity) getActivity()).setActualChecklistFilterId(mFilter);
+            checklistParser = getCorrectParser(mFilter);
             item.setChecked(true);
 
             if (isDateAfterMinimum(checklistParser)) {
-                actualMonth = checklistParser.getMinimumMonth();
-                actualYear = checklistParser.getMinimumYear();
+                mMonth = checklistParser.getMinimumMonth();
+                mYear = checklistParser.getMinimumYear();
             }
 
-            retrieveMangas(actualMonth, actualYear);
+            ((MainActivity) getActivity()).setActualChecklist(mMonth, mYear);
+
+            retrieveMangas(mMonth, mYear);
         }
 
         return true;
+    }
+
+    private void rvState() {
+        rvState = recyclerView.getLayoutManager().onSaveInstanceState();
     }
 
     private boolean isDateAfterMinimum(ChecklistParser newParser) {
@@ -300,13 +272,69 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
         Calendar actualDate = Calendar.getInstance();
 
         newMinimumDate.set(newParser.getMinimumYear(), newParser.getMinimumMonth() - 1, 0);
-        actualDate.set(actualYear, actualMonth, 0);
+        actualDate.set(mYear, mMonth, 0);
 
         return newMinimumDate.after(actualDate);
     }
 
-    private ChecklistParser getCorrectParser(int filterId) {
-        switch (filterId) {
+
+    public void showCorrectView(int viewId) {
+        getActivity().runOnUiThread(() -> {
+            mViewVisible = viewId;
+
+            viewContent.setVisibility(viewId == STATE_CONTENT ? View.VISIBLE : View.GONE);
+            viewError.setVisibility(viewId == STATE_ERROR ? View.VISIBLE : View.GONE);
+            viewLoading.setVisibility(viewId == STATE_LOADING ? View.VISIBLE : View.GONE);
+
+            if (menuItemFilter != null)
+                menuItemFilter.setVisible(viewId == STATE_CONTENT);
+        });
+    }
+
+    private void retrieveMangas(int month, int year) {
+        checklistRequest = new ChecklistRequest(this, month, year, getCorrectParser(mFilter));
+        checklistRequest.setReloading(mRefreshing);
+        checklistRequest.execute();
+    }
+
+    public void showChecklist(List<Manga> mangaList) {
+        int oldView = mViewVisible;
+
+        showCorrectView(mangaList == null ? STATE_ERROR : STATE_CONTENT);
+
+        if (mangaList != null) {
+            if (oldView == STATE_LOADING) {
+                this.mMangaList.clear();
+                this.mMangaList.addAll(mangaList);
+
+                mangasAdapter.notifyDataSetChanged();
+            }
+            else {
+                int size = this.mMangaList.size();
+                this.mMangaList.clear();
+
+                mangasAdapter.notifyItemRangeRemoved(0, size);
+
+                this.mMangaList.addAll(mangaList);
+
+                mangasAdapter.notifyItemRangeInserted(0, this.mMangaList.size());
+            }
+
+            swipeRefreshLayout.setRefreshing(false);
+
+            GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
+            layoutManager.scrollToPositionWithOffset(0, 0);
+
+            textViewEmpty.setVisibility(mangaList.size() == 0 ? View.VISIBLE : View.GONE);
+        }
+
+        mRefreshing = false;
+
+
+    }
+
+    private ChecklistParser getCorrectParser(int filter) {
+        switch (filter) {
             case R.id.action_filter_jbc:
                 return new JBCChecklistParser();
             case R.id.action_filter_panini:
@@ -318,8 +346,41 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
         }
     }
 
+    protected void initDateDialog() {
+        MonthYearPickerDialog monthYearPickerDialog = MonthYearPickerDialog.newInstance(checklistParser, mMonth, mYear);
+        monthYearPickerDialog.setListener(this);
+        monthYearPickerDialog.show(getActivity().getSupportFragmentManager(), MonthYearPickerDialog.KEY);
+    }
+
     @Override
     public void onClick(View view) {
-        retrieveMangas(actualMonth, actualYear);
+        if (view.getId() == R.id.button_try_again) {
+            viewLoading.setVisibility(View.VISIBLE);
+            viewError.setVisibility(View.GONE);
+
+            showCorrectView(STATE_LOADING);
+        }
+        else if (view.getId() == R.id.fab) {
+            initDateDialog();
+        }
+    }
+
+    @Override
+    public void onRefresh() {
+        mRefreshing = true;
+
+        retrieveMangas(mMonth, mYear);
+    }
+
+    @Override
+    public void onDateSet(DatePicker datePicker, int year, int month, int day) {
+        if (mYear != year || mMonth != month) {
+            mMonth = month;
+            mYear = year;
+
+            ((MainActivity) getActivity()).setActualChecklist(mMonth, mYear);
+
+            retrieveMangas(month, year);
+        }
     }
 }

@@ -56,6 +56,9 @@ public class JBCDetailParser extends DetailParser {
         for (Element p : detailsGroup) {
             Element detailGroupName = p.previousElementSibling();
 
+            if (detailGroupName == null)
+                continue;
+
             DetailGroup detailGroup = new DetailGroup();
 
             if (detailGroupName.tagName() == "h2" || detailGroupName.tagName() == "h3")

@@ -102,13 +102,14 @@ public class PaniniChecklistParser extends ChecklistParser {
     private void obtainChecklistIdsFromAPI() {
         if (Hawk.contains(CHECKLIST_DATA_KEY)) {
             long obtainedDate = Hawk.get(CHECKLIST_DATA_OBTAINED_DATE);
+            List<ChecklistData> hawkList = Hawk.get(CHECKLIST_DATA_KEY);
 
             Calendar obtainedDateCalendar = Calendar.getInstance();
             Calendar actualDate = getActualDate();
 
             obtainedDateCalendar.setTimeInMillis(obtainedDate);
 
-            if (actualDate.after(obtainedDateCalendar) || obtainedDate == 0) {
+            if (actualDate.after(obtainedDateCalendar) || obtainedDate == 0 || hawkList.size() == 0) {
                 List<ChecklistData> checklistDataJson = getChecklistDataFromAPI();
                 Hawk.put(CHECKLIST_DATA_KEY, checklistDataJson);
                 Hawk.put(CHECKLIST_DATA_OBTAINED_DATE, actualDate.getTimeInMillis());
@@ -170,14 +171,19 @@ public class PaniniChecklistParser extends ChecklistParser {
 
         PaniniDetailParser parser;
 
-        for (Element e : list) {
+        for (int i = 0; i < list.size(); i++) {
             if (isCanceled())
                 return null;
+
+            Element e = list.get(i);
 
             Manga m = getManga(e, month, year);
 
             parser = new PaniniDetailParser(m);
             m = parser.getDetails();
+
+            if (onMangaLoaded != null)
+                onMangaLoaded.onMangaLoaded(m, i, list.size());
 
             mangas.add(m);
         }

@@ -21,7 +21,13 @@ import io.github.alessandrojean.mangachecklists.domain.Manga;
 abstract public class ChecklistParser {
     protected static final String USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.84 Safari/537.36";
     protected boolean canceled;
+    protected OnMangaLoaded onMangaLoaded;
 
+    public ChecklistParser setOnMangaLoaded(OnMangaLoaded onMangaLoaded) {
+        this.onMangaLoaded = onMangaLoaded;
+
+        return this;
+    }
 
     protected String getUrl(int month, int year) {
         return null;
@@ -90,5 +96,9 @@ abstract public class ChecklistParser {
 
     public boolean isCanceled() {
         return canceled;
+    }
+
+    public interface OnMangaLoaded {
+        void onMangaLoaded(Manga manga, int position, int total);
     }
 }

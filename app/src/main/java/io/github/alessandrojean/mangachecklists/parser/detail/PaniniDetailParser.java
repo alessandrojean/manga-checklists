@@ -29,6 +29,11 @@ public class PaniniDetailParser extends DetailParser {
         Element synopsis = html.select("div.details-description p").first();
         Elements details = html.select("div.description ul li");
 
+        if (synopsis == null && details.size() == 0) {
+            manga.setUrl(null);
+            return manga;
+        }
+
         if (synopsis != null)
             manga.setSynopsis(synopsis.text());
 
