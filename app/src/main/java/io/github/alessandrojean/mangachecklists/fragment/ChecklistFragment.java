@@ -37,7 +37,7 @@ import io.github.alessandrojean.mangachecklists.task.ChecklistRequest;
  * Created by Desktop on 16/12/2017.
  */
 
-public class ChecklistFragment extends FragmentAbstract implements DatePickerDialog.OnDateSetListener {
+public class ChecklistFragment extends FragmentAbstract implements DatePickerDialog.OnDateSetListener, View.OnClickListener {
     public static final String TITLE = "Checklist";
 
     private static final String ACTUAL_MONTH_KEY = "actual_month_key";
@@ -75,6 +75,8 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
                 initDateDialog();
             }
         });
+
+        buttonTryAgain.setOnClickListener(this);
 
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -226,6 +228,8 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
         }
         else {
             progressBar.setVisibility(View.GONE);
+            floatingActionButton.setVisibility(View.GONE);
+            swipeRefreshLayout.setVisibility(View.GONE);
             viewError.setVisibility(View.VISIBLE);
         }
 
@@ -312,5 +316,10 @@ public class ChecklistFragment extends FragmentAbstract implements DatePickerDia
             default:
                 return null;
         }
+    }
+
+    @Override
+    public void onClick(View view) {
+        retrieveMangas(actualMonth, actualYear);
     }
 }

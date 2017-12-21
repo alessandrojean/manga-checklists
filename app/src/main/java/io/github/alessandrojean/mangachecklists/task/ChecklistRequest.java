@@ -54,5 +54,6 @@ public class ChecklistRequest extends AsyncTask<Void, Void, List<Manga>> {
     @Override
     protected void onCancelled() {
         super.onCancelled();
+        parser.cancel();
     }
 }

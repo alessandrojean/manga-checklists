@@ -171,6 +171,9 @@ public class PaniniChecklistParser extends ChecklistParser {
         PaniniDetailParser parser;
 
         for (Element e : list) {
+            if (isCanceled())
+                return null;
+
             Manga m = getManga(e, month, year);
 
             parser = new PaniniDetailParser(m);

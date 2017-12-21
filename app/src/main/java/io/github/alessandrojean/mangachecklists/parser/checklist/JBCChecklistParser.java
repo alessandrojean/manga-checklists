@@ -119,6 +119,9 @@ public class JBCChecklistParser extends ChecklistParser {
         JBCDetailParser parser;
 
         for (Element e : list) {
+            if (isCanceled())
+                return null;
+
             Manga m = getManga(e, month, year);
 
             parser = new JBCDetailParser(m);

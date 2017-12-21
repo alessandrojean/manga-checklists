@@ -168,6 +168,9 @@ public class NewPOPChecklistParser extends ChecklistParser {
         NewPOPDetailParser parser;
 
         for (Element e : list) {
+            if (isCanceled())
+                return null;
+
             Manga m = getManga(e);
 
             parser = new NewPOPDetailParser(m);

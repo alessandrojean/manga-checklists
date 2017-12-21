@@ -6,17 +6,13 @@ android {
         applicationId "io.github.alessandrojean.mangachecklists"
         minSdkVersion 19
         targetSdkVersion 26
-        versionCode 3
+        versionCode 120
         versionName "1.2.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
-        debug {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

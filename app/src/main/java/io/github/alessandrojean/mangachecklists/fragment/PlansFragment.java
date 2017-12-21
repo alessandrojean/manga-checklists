@@ -20,7 +20,7 @@ import io.github.alessandrojean.mangachecklists.task.PlanRequest;
  * Created by Desktop on 16/12/2017.
  */
 
-public class PlansFragment extends FragmentAbstract {
+public class PlansFragment extends FragmentAbstract implements View.OnClickListener {
     public static final String TITLE = "Assinaturas";
 
     private PlansAdapter plansAdapter;
@@ -46,6 +46,8 @@ public class PlansFragment extends FragmentAbstract {
                 retrievePlans();
             }
         });
+
+        buttonTryAgain.setOnClickListener(this);
     }
 
     @Override
@@ -117,8 +119,18 @@ public class PlansFragment extends FragmentAbstract {
                 progressBar.setVisibility(View.GONE);
             }
         }
+        else {
+            progressBar.setVisibility(View.GONE);
+            swipeRefreshLayout.setVisibility(View.GONE);
+            viewError.setVisibility(View.VISIBLE);
+        }
 
         isReloading = false;
         isLoading = false;
+    }
+
+    @Override
+    public void onClick(View view) {
+        retrievePlans();
     }
 }
