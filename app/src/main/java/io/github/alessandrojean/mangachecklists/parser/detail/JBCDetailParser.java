@@ -41,12 +41,27 @@ public class JBCDetailParser extends DetailParser {
 
     private Manga parseMangaOld(Document html) {
         Element subtitle = html.select("em.text-center.excerpt").first();
-        Element synopsis = html.select("div.mb30[itemprop=\"description\"] p").first();
+        Elements synopsis = html.select("div.mb30[itemprop=\"description\"] p");
         Element headerImage = html.select("img.colectionHeader.mb10").first();
-        Elements detailsGroup = html.select("div.mb30[itemprop=\"description\"] p:has(strong)");
+        Elements detailsGroup = html.select(
+                "div.mb30[itemprop=\"description\"] h2 + p:has(strong),"
+                + "div.mb30[itemprop=\"description\"] h3 + p:has(strong),"
+                + "div.mb30[itemprop=\"description\"] p:contains(Dados da Edição) + p:has(strong)"
+        );
 
         manga.setSubtitle(subtitle.text());
-        manga.setSynopsis(synopsis.text());
+
+        String synopsisText = "";
+        for (Element p : synopsis) {
+            if (p.text().equals(detailsGroup.first().text()))
+                break;
+            if (p.text().equals("&nbsp;") || p.text().length() == 1)
+                continue;
+
+            synopsisText += "\n" + p.text();
+        }
+
+        manga.setSynopsis(synopsisText.replaceFirst("\n", ""));
 
         if (headerImage != null)
             manga.setHeaderUrl(headerImage.attr("src"));
@@ -69,11 +84,15 @@ public class JBCDetailParser extends DetailParser {
             Elements details = p.select("strong");
 
             for (Element e : details) {
+                Node node = e.nextSibling();
+
+                if (node == null)
+                    continue;
+
                 Detail detail = new Detail();
                 detail.setName(e.text().replace(":", ""));
 
-                Node node = e.nextSibling();
-                detail.setDetail(node.toString().trim().replace("&nbsp;", ""));
+                detail.setDetail(node.toString().replace(":", "").trim().replace("&nbsp;", ""));
 
                 Log.d("detail", detail.getName() + detail.getDetail());
 
@@ -81,6 +100,10 @@ public class JBCDetailParser extends DetailParser {
             }
 
             detailGroup.setDetails(detailList);
+
+            // Some pages have the title in an <p> element.
+            if (detailGroup.getName() == null)
+                detailGroup.setName("Dados da Edição");
 
             detailGroupList.add(detailGroup);
         }

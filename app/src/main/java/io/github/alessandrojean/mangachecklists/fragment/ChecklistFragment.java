@@ -2,6 +2,7 @@ package io.github.alessandrojean.mangachecklists.fragment;
 
 import android.app.DatePickerDialog;
 import android.content.res.Configuration;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -41,7 +42,12 @@ import io.github.alessandrojean.mangachecklists.task.ChecklistRequest;
 import me.zhanghai.android.materialprogressbar.IndeterminateCircularProgressDrawable;
 
 
-public class ChecklistFragment extends Fragment implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener, DatePickerDialog.OnDateSetListener {
+public class ChecklistFragment extends Fragment implements
+        View.OnClickListener,
+        SwipeRefreshLayout.OnRefreshListener,
+        DatePickerDialog.OnDateSetListener {
+
+    public static final String TAG = ChecklistFragment.class.getName();
     public static final String TITLE = "Checklist";
     public static final String KEY = "fragment";
 
@@ -153,12 +159,12 @@ public class ChecklistFragment extends Fragment implements View.OnClickListener,
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewContent = view.findViewById(R.id.layout_content);
+        viewContent = view.findViewById(R.id.layout_content_checklist);
 
-        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout_checklist);
         swipeRefreshLayout.setOnRefreshListener(this);
 
-        recyclerView = view.findViewById(R.id.recycler_view);
+        recyclerView = view.findViewById(R.id.recycler_view_checklist);
 
         GridLayoutManager gridLayoutManager;
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT)
@@ -170,19 +176,19 @@ public class ChecklistFragment extends Fragment implements View.OnClickListener,
 
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        floatingActionButton = view.findViewById(R.id.fab);
+        floatingActionButton = view.findViewById(R.id.fab_checklist);
         floatingActionButton.setOnClickListener(this);
 
-        textViewEmpty = view.findViewById(R.id.text_empty);
+        textViewEmpty = view.findViewById(R.id.text_empty_checklist);
 
-        viewError = view.findViewById(R.id.layout_error);
+        viewError = view.findViewById(R.id.layout_error_checklist);
 
-        buttonTryAgain = view.findViewById(R.id.button_try_again);
+        buttonTryAgain = view.findViewById(R.id.button_try_again_checklist);
         buttonTryAgain.setOnClickListener(this);
 
-        viewLoading = view.findViewById(R.id.layout_loading);
+        viewLoading = view.findViewById(R.id.layout_loading_checklist);
 
-        progressBarLoading = view.findViewById(R.id.progress_bar);
+        progressBarLoading = view.findViewById(R.id.progress_bar_checklist);
         progressBarLoading.setIndeterminateDrawable(new IndeterminateCircularProgressDrawable(getContext()));
     }
 
@@ -201,13 +207,17 @@ public class ChecklistFragment extends Fragment implements View.OnClickListener,
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        cancelRequest();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
 
-        if (checklistRequest != null && checklistRequest.getStatus() == ChecklistRequest.Status.RUNNING) {
-            checklistRequest.cancel(true);
-            checklistRequest = null;
-        }
+        cancelRequest();
     }
 
     @Override
@@ -263,6 +273,13 @@ public class ChecklistFragment extends Fragment implements View.OnClickListener,
         return true;
     }
 
+    private void cancelRequest() {
+        if (checklistRequest != null && checklistRequest.getStatus() == ChecklistRequest.Status.RUNNING) {
+            checklistRequest.cancel(true);
+            checklistRequest = null;
+        }
+    }
+
     private void rvState() {
         rvState = recyclerView.getLayoutManager().onSaveInstanceState();
     }
@@ -294,7 +311,7 @@ public class ChecklistFragment extends Fragment implements View.OnClickListener,
     private void retrieveMangas(int month, int year) {
         checklistRequest = new ChecklistRequest(this, month, year, getCorrectParser(mFilter));
         checklistRequest.setReloading(mRefreshing);
-        checklistRequest.execute();
+        checklistRequest.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void showChecklist(List<Manga> mangaList) {
@@ -354,13 +371,13 @@ public class ChecklistFragment extends Fragment implements View.OnClickListener,
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.button_try_again) {
+        if (view.getId() == R.id.button_try_again_checklist) {
             viewLoading.setVisibility(View.VISIBLE);
             viewError.setVisibility(View.GONE);
 
             showCorrectView(STATE_LOADING);
         }
-        else if (view.getId() == R.id.fab) {
+        else if (view.getId() == R.id.fab_checklist) {
             initDateDialog();
         }
     }

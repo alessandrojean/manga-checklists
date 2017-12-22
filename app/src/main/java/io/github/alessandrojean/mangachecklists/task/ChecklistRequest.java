@@ -47,6 +47,8 @@ public class ChecklistRequest extends AsyncTask<Void, Void, List<Manga>> {
 
     @Override
     protected List<Manga> doInBackground(Void... voids) {
+        Log.d("MangaChecklists", "ChecklistRequest: doInBackground()");
+
         if (!reloading && Hawk.contains(parser.getChecklistKey() + month + year)) {
             List<Manga> hawkList = Hawk.get(parser.getChecklistKey() + month + year);
 

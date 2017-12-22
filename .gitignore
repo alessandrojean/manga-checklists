@@ -9,3 +9,5 @@
 .externalNativeBuild
 /images
 /screenshots
+*.zip
+*.txt

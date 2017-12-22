@@ -1,6 +1,7 @@
 package io.github.alessandrojean.mangachecklists.fragment;
 
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.annotation.Nullable;
@@ -29,7 +30,11 @@ import io.github.alessandrojean.mangachecklists.task.PlanRequest;
 import me.zhanghai.android.materialprogressbar.IndeterminateCircularProgressDrawable;
 
 
-public class PlansFragment extends Fragment implements View.OnClickListener, SwipeRefreshLayout.OnRefreshListener {
+public class PlansFragment extends Fragment implements
+        View.OnClickListener,
+        SwipeRefreshLayout.OnRefreshListener {
+
+    public static final String TAG = PlansFragment.class.getName();
     public static final String TITLE = "Assinaturas";
     public static final String KEY = "fragment";
 
@@ -111,12 +116,12 @@ public class PlansFragment extends Fragment implements View.OnClickListener, Swi
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        viewContent = view.findViewById(R.id.layout_content);
+        viewContent = view.findViewById(R.id.layout_content_plans);
 
-        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout);
+        swipeRefreshLayout = view.findViewById(R.id.swipe_refresh_layout_plans);
         swipeRefreshLayout.setOnRefreshListener(this);
 
-        recyclerView = view.findViewById(R.id.recycler_view);
+        recyclerView = view.findViewById(R.id.recycler_view_plans);
 
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(linearLayoutManager);
@@ -126,16 +131,16 @@ public class PlansFragment extends Fragment implements View.OnClickListener, Swi
 
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
-        textViewEmpty = view.findViewById(R.id.text_empty);
+        textViewEmpty = view.findViewById(R.id.text_empty_plans);
 
-        viewError = view.findViewById(R.id.layout_error);
+        viewError = view.findViewById(R.id.layout_error_plans);
 
-        buttonTryAgain = view.findViewById(R.id.button_try_again);
+        buttonTryAgain = view.findViewById(R.id.button_try_again_plans);
         buttonTryAgain.setOnClickListener(this);
 
-        viewLoading = view.findViewById(R.id.layout_loading);
+        viewLoading = view.findViewById(R.id.layout_loading_plans);
 
-        progressBarLoading = view.findViewById(R.id.progress_bar);
+        progressBarLoading = view.findViewById(R.id.progress_bar_plans);
         progressBarLoading.setIndeterminateDrawable(new IndeterminateCircularProgressDrawable(getContext()));
     }
 
@@ -154,13 +159,17 @@ public class PlansFragment extends Fragment implements View.OnClickListener, Swi
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+
+        cancelRequest();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
 
-        if (planRequest != null && planRequest.getStatus() == PlanRequest.Status.RUNNING) {
-            planRequest.cancel(true);
-            planRequest = null;
-        }
+        cancelRequest();
     }
 
     @Override
@@ -169,6 +178,13 @@ public class PlansFragment extends Fragment implements View.OnClickListener, Swi
         outState.putBoolean(ARG_REFRESHING, mRefreshing);
         outState.putParcelableArrayList(ARG_PLAN_LIST, mPlanList);
         super.onSaveInstanceState(outState);
+    }
+
+    private void cancelRequest() {
+        if (planRequest != null && planRequest.getStatus() == PlanRequest.Status.RUNNING) {
+            planRequest.cancel(true);
+            planRequest = null;
+        }
     }
 
     private void rvState() {
@@ -188,7 +204,7 @@ public class PlansFragment extends Fragment implements View.OnClickListener, Swi
     private void retrievePlans() {
         planRequest = new PlanRequest(this, getCorrectParser(0));
         planRequest.setReloading(mRefreshing);
-        planRequest.execute();
+        planRequest.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     public void showPlans(List<Plan> planList) {

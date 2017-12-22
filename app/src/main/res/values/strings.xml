@@ -14,7 +14,21 @@
 
     <string name="nav_checklists">Checklists</string>
     <string name="nav_plans">Assinaturas</string>
+    <string name="nav_settings">Configurações</string>
     <string name="nav_about">Sobre</string>
+
+    <string name="preference_details_plan_title">Detalhes nas assinaturas</string>
+    <string name="preference_details_plan_summary">
+        Não recomendado, são muitas requisições
+        e você pode ter seu IP banido temporariamente.
+    </string>
+    <string name="preference_version_title">Versão</string>
+    <string name="preference_github_title">GitHub</string>
+    <string name="preference_github_summary">http://github.com/alessandrojean/manga-checklists</string>
+    <string name="preference_notifications_screen_title">Notificações</string>
+    <string name="preference_notifications_title">Notificações</string>
+    <string name="preference_category_behavior_title">Comportamento</string>
+    <string name="preference_category_about_title">Sobre</string>
 
     <string name="text_empty">Nenhum mangá encontrado.</string>
     <string name="text_error_oops">Oops!</string>

@@ -46,6 +46,8 @@ public class PlanRequest extends AsyncTask<Void, Void, List<Plan>> {
 
     @Override
     protected List<Plan> doInBackground(Void... voids) {
+        Log.d("MangaChecklists", "PlanRequest: doInBackground()");
+
         if (!reloading && Hawk.contains(parser.getPlanKey())) {
             List<Plan> hawkList = Hawk.get(parser.getPlanKey());
 
