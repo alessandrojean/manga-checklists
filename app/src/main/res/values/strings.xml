@@ -22,6 +22,7 @@
         Não recomendado, são muitas requisições
         e você pode ter seu IP banido temporariamente.
     </string>
+    <string name="preference_build_date_title">Data de compilação</string>
     <string name="preference_version_title">Versão</string>
     <string name="preference_github_title">GitHub</string>
     <string name="preference_github_summary">http://github.com/alessandrojean/manga-checklists</string>

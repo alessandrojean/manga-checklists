@@ -1,5 +1,6 @@
 package io.github.alessandrojean.mangachecklists.parser.plan;
 
+import android.content.Context;
 import android.util.Log;
 
 import org.jsoup.nodes.Document;
@@ -20,11 +21,16 @@ import io.github.alessandrojean.mangachecklists.parser.detail.JBCDetailParser;
  */
 
 public class JBCPlanParser extends PlanParser {
+    private boolean loadDetails = false;
 
     public static final String CSS_SELECT_PLAN = "div.box.mb-md ul li";
 
     public static final String PATTERN_INFO_PLAN = "^(.*?)(?: #(\\d+))?$";
     public static final String PATTERN_PLAN = "^(?:.*?) - enviado em (\\d+)\\/(\\d+)\\/(\\d+)(?: - (.*))?";
+
+    public JBCPlanParser(Context context) {
+        super(context);
+    }
 
     @Override
     protected String getUrl() {
@@ -42,7 +48,12 @@ public class JBCPlanParser extends PlanParser {
 
         Elements list = html.select(CSS_SELECT_PLAN);
 
+        loadDetails = getLoadDetails();
+
         for (Element e : list) {
+            if (isCanceled())
+                return null;
+
             Plan plan = getPlan(e);
             plans.add(plan);
         }
@@ -66,8 +77,10 @@ public class JBCPlanParser extends PlanParser {
             manga.setVolume(matcher.group(2) == null ? -1 : Integer.parseInt(matcher.group(2)));
             manga.setUrl(element.select("strong a").attr("href"));
 
-            //jbcDetailParser = new JBCDetailParser(manga);
-            //manga = jbcDetailParser.getDetails();
+            if (loadDetails) {
+                jbcDetailParser = new JBCDetailParser(manga);
+                manga = jbcDetailParser.getDetails();
+            }
 
             plan.setManga(manga);
         }

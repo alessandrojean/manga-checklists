@@ -1,6 +1,9 @@
 package io.github.alessandrojean.mangachecklists.task;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
 
 import com.orhanobut.hawk.Hawk;
@@ -77,5 +80,11 @@ public class PlanRequest extends AsyncTask<Void, Void, List<Plan>> {
         if (fragment.get() != null) {
             fragment.get().showPlans(plans);
         }
+    }
+
+    @Override
+    protected void onCancelled() {
+        super.onCancelled();
+        parser.cancel();
     }
 }

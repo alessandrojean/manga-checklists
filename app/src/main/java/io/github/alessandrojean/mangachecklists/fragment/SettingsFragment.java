@@ -36,6 +36,10 @@ public class SettingsFragment extends PreferenceFragmentCompat{
         Preference preferenceVersion = findPreference("preference_version");
         String showVersion = BuildConfig.DEBUG ? "r" + BuildConfig.COMMIT_COUNT : BuildConfig.VERSION_NAME;
         preferenceVersion.setSummary(showVersion);
+
+        // Show build date.
+        Preference preferenceBuildDate = findPreference("preference_build_date");
+        preferenceBuildDate.setSummary(BuildConfig.BUILD_TIME);
     }
 
     @Override

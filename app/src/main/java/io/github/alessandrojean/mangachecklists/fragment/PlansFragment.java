@@ -243,7 +243,7 @@ public class PlansFragment extends Fragment implements
 
     // Since we only have one parser available.
     private PlanParser getCorrectParser(int filter) {
-        return new JBCPlanParser();
+        return new JBCPlanParser(getContext());
     }
 
     @Override
