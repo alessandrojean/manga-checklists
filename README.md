@@ -9,16 +9,24 @@ requests, and show the content.
 The possibility of a creation of an proper server dedicated to 
 parse the data exists, but it's not the main purpose.
 
-## Future features
-
-- Notifications when the checked mangas are available.
-
 ## Publishers
 
 Available at moment:
-- [Editora JBC](https://mangasjbc.com.br/): checklists and plans;
-- [Panini Comics](https://loja.panini.com.br/): checklists;
-- [NewPOP Editora](http://www.newpop.com.br): checklists.
+- [Editora JBC](https://mangasjbc.com.br/): checklists, plans and details when available;
+- [Panini Comics](https://loja.panini.com.br/): checklists and details when available;
+- [NewPOP Editora](http://www.newpop.com.br): checklists and details when available.
+
+## Screenshots
+
+![Screenshots](https://user-images.githubusercontent.com/14254807/34279885-f135777e-e69a-11e7-9fc2-5b61e71c29b8.png)
+
+## How it works?
+
+The app obtain the data from the publishers website, in HTML format, 
+and uses a parser, in this case Jsoup, to get the important informations.
+ 
+This method it's not good since that any layout changes in the publishers
+website can cause an instantaneous crash in the app.
 
 ## License
 
@@ -42,3 +50,8 @@ Available at moment:
     COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
     IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+    
+## Disclaimer
+
+The developer it's not filiated with any of the publishers, the app just uses
+the public data available in their websites.
