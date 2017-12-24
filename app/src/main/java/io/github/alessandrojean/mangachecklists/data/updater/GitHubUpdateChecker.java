@@ -35,7 +35,7 @@ public class GitHubUpdateChecker {
             String newVersion = gitHubRelease.getVersion();
 
             // Check if latest version is different from current version.
-            if (newVersion != BuildConfig.VERSION_NAME) {
+            if (!newVersion.equals(BuildConfig.VERSION_NAME)) {
                 return new GitHubUpdateResult.NewUpdate(gitHubRelease);
             }
             else {
