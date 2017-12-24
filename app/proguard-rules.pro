@@ -19,6 +19,10 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-dontobfuscate
+
+-dontwarn io.github.alessandrojean.mangachecklists.**
+-keep class io.github.alessandrojean.mangachecklists.**
 
 # Picasso
 -dontwarn com.squareup.okhttp.**
@@ -36,6 +40,9 @@
 -keepattributes Signature
 # Retain declared checked exceptions for use by a Proxy instance.
 -keepattributes Exceptions
-
-# Okio (Retrofit)
 -dontwarn okio.**
+-dontwarn okhttp3.**
+-dontwarn javax.annotation.**
+
+# RxJava
+-dontwarn sun.misc.**

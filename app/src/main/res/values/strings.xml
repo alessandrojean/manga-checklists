@@ -61,15 +61,15 @@
     <string name="update_check_title">Nova atualização disponível!</string>
     <string name="update_check_confirm">Fazer download</string>
     <string name="update_check_ignore">Ignorar</string>
-    <string name="update_check_no_new_updates">Sem atualizações disponíveis</string>
-    <string name="update_check_download_started">Download iniciado</string>
-    <string name="update_check_look_for_updates">Procurando por atualizações</string>
+    <string name="update_check_no_new_updates">Sem atualizações disponíveis.</string>
+    <string name="update_check_download_started">Download iniciado.</string>
+    <string name="update_check_look_for_updates">Procurando por atualizações.</string>
 
     <string name="update_check_notification_file_download">Fazer download da atualização</string>
-    <string name="update_check_notification_download_in_progress">Download em progresso</string>
-    <string name="update_check_notification_download_complete">Download concluído</string>
-    <string name="update_check_notification_download_error">Erro ao fazer download</string>
-    <string name="update_check_notification_update_available">Atualização disponível</string>
+    <string name="update_check_notification_download_in_progress">Download em progresso.</string>
+    <string name="update_check_notification_download_complete">Download concluído.</string>
+    <string name="update_check_notification_download_error">Erro ao fazer download.</string>
+    <string name="update_check_notification_update_available">Atualização disponível.</string>
 
     <!-- Notification channels -->
     <string name="channel_common">Comum</string>
