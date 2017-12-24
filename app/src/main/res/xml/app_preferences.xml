@@ -15,7 +15,7 @@
         <android.support.v7.preference.PreferenceScreen
             android:key="preference_notifications_screen"
             android:title="@string/preference_notifications_screen_title"
-            android:enabled="false"
+            android:enabled="true"
             android:persistent="false" >
 
             <android.support.v7.preference.CheckBoxPreference
@@ -23,6 +23,17 @@
                 android:title="@string/preference_notifications_title" />
 
         </android.support.v7.preference.PreferenceScreen>
+
+    </android.support.v7.preference.PreferenceCategory>
+
+    <android.support.v7.preference.PreferenceCategory
+        android:title="@string/preference_category_update_title">
+
+        <android.support.v7.preference.CheckBoxPreference
+            android:key="preference_automatic_updates"
+            android:title="@string/preference_automatic_updates_title"
+            android:summary="@string/preference_automatic_updates_summary"
+            android:defaultValue="false" />
 
     </android.support.v7.preference.PreferenceCategory>
 

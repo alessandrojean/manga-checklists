@@ -25,6 +25,8 @@ import android.widget.DatePicker;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.pnikosis.materialishprogress.ProgressWheel;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -45,7 +47,7 @@ import me.zhanghai.android.materialprogressbar.IndeterminateCircularProgressDraw
 public class ChecklistFragment extends Fragment implements
         View.OnClickListener,
         SwipeRefreshLayout.OnRefreshListener,
-        DatePickerDialog.OnDateSetListener {
+        DatePickerDialog.OnDateSetListener{
 
     public static final String TAG = ChecklistFragment.class.getName();
     public static final String TITLE = "Checklist";

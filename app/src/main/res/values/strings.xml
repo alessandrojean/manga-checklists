@@ -3,10 +3,18 @@
     <string name="app_version">v1.3.0</string>
     <string name="app_github">https://github.com/alessandrojean/manga-checklists</string>
 
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+    <string name="send">Enviar</string>
+
+    <!-- Actions -->
     <string name="action_want">Quero</string>
     <string name="action_information">Informações</string>
     <string name="action_filter">Filtrar</string>
     <string name="action_try_again">Tentar novamente</string>
+    <string name="action_download">Download</string>
+    <string name="action_install">Instalar</string>
+    <string name="action_cancel">Cancelar</string>
 
     <string name="action_filter_jbc">Editora JBC</string>
     <string name="action_filter_panini">Panini Comics</string>
@@ -29,7 +37,10 @@
     <string name="preference_notifications_screen_title">Notificações</string>
     <string name="preference_notifications_title">Notificações</string>
     <string name="preference_category_behavior_title">Comportamento</string>
+    <string name="preference_category_update_title">Atualizações</string>
     <string name="preference_category_about_title">Sobre</string>
+    <string name="preference_automatic_updates_title">Procurar por atualizações</string>
+    <string name="preference_automatic_updates_summary">Procurar por atualizações automaticamente.</string>
 
     <string name="text_empty">Nenhum mangá encontrado.</string>
     <string name="text_error_oops">Oops!</string>
@@ -37,6 +48,31 @@
         Um erro ocorreu na solicitação.\n
         Verifique se você está conectado.
     </string>
+
+    <string name="crash_dialog_title">Manga Checklist finalizou</string>
+    <string name="crash_dialog_text">
+        Um erro inesperado ocorreu forçando a finalização do aplicativo.
+        Por favor, ajude-nos a arrumar isto mandando-nos as informações
+        do erro via e-mail.
+    </string>
+    <string name="crash_dialog_comment_prompt">Você pode adicionar comentários sobre o problema abaixo:</string>
+
+    <!--UpdateCheck Notifications-->
+    <string name="update_check_title">Nova atualização disponível!</string>
+    <string name="update_check_confirm">Fazer download</string>
+    <string name="update_check_ignore">Ignorar</string>
+    <string name="update_check_no_new_updates">Sem atualizações disponíveis</string>
+    <string name="update_check_download_started">Download iniciado</string>
+    <string name="update_check_look_for_updates">Procurando por atualizações</string>
+
+    <string name="update_check_notification_file_download">Fazer download da atualização</string>
+    <string name="update_check_notification_download_in_progress">Download em progresso</string>
+    <string name="update_check_notification_download_complete">Download concluído</string>
+    <string name="update_check_notification_download_error">Erro ao fazer download</string>
+    <string name="update_check_notification_update_available">Atualização disponível</string>
+
+    <!-- Notification channels -->
+    <string name="channel_common">Comum</string>
 
     <string name="navigation_drawer_open">Abrir navigation drawer</string>
     <string name="navigation_drawer_close">Fechar navigation drawer</string>

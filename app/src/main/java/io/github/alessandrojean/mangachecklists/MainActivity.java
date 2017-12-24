@@ -1,5 +1,9 @@
 package io.github.alessandrojean.mangachecklists;
 
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.app.Notification;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,6 +16,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.drawable.DrawerArrowDrawable;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.preference.PreferenceScreen;
 import android.support.v7.widget.Toolbar;
@@ -116,19 +121,16 @@ public class MainActivity extends AppCompatActivity implements
 
     private void replaceFragment(Fragment fragment) {
         String showTag = fragment.getClass().getName();
-
         FragmentManager manager = getSupportFragmentManager();
-        Fragment fragmentInBackStack = manager.findFragmentByTag(showTag);
-        boolean fragmentPopped = manager.popBackStackImmediate(showTag, 0);
+        manager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
 
-        // Checks if need to create new Fragment.
-        if (!fragmentPopped && fragmentInBackStack == null) {
-            FragmentTransaction transaction = manager.beginTransaction();
-            transaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-            transaction.replace(R.id.rl_container, fragment, showTag);
-            transaction.addToBackStack(showTag);
-            transaction.commit();
-        }
+        FragmentTransaction transaction = manager.beginTransaction();
+        transaction.replace(R.id.rl_container, fragment, showTag);
+
+        if (fragment instanceof NotificationSettingsFragment)
+            transaction.addToBackStack(null);
+
+        transaction.commit();
     }
 
     @Override
@@ -202,8 +204,6 @@ public class MainActivity extends AppCompatActivity implements
     public void onBackPressed() {
         if (drawerLayout.isDrawerOpen(GravityCompat.START))
             drawerLayout.closeDrawer(GravityCompat.START);
-        else if (getSupportFragmentManager().getBackStackEntryCount() == 1)
-            finish();
         else
             super.onBackPressed();
 
@@ -255,12 +255,7 @@ public class MainActivity extends AppCompatActivity implements
             actionBarDrawerToggle.setDrawerIndicatorEnabled(false);
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             if (actionBarDrawerToggle.getToolbarNavigationClickListener() == null) {
-                actionBarDrawerToggle.setToolbarNavigationClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        onBackPressed();
-                    }
-                });
+                actionBarDrawerToggle.setToolbarNavigationClickListener(v -> onBackPressed());
             }
 
             drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
@@ -288,38 +283,10 @@ public class MainActivity extends AppCompatActivity implements
         return true;
     }
 
-    private Fragment getCurrentFragment() {
-        return getSupportFragmentManager().findFragmentById(R.id.rl_container);
-    }
-
     @Override
     public void onBackStackChanged() {
-        Fragment current = getCurrentFragment();
-        if (current != null)
-            updateToolbarAndDrawer(current);
-    }
-
-    private void updateToolbarAndDrawer(Fragment fragment) {
-        if (fragment instanceof ChecklistFragment) {
-            navigationView.setCheckedItem(R.id.nav_checklist);
-
-            toolbar.setTitle(title = ChecklistFragment.TITLE);
-            showDateInToolbar();
+        Fragment current = getSupportFragmentManager().findFragmentById(R.id.rl_container);
+        if (current instanceof SettingsFragment)
             showBackButton(false);
-        }
-        else if (fragment instanceof PlansFragment) {
-            navigationView.setCheckedItem(R.id.nav_plans);
-
-            toolbar.setTitle(title = PlansFragment.TITLE);
-            toolbar.setSubtitle(subtitle = "");
-            showBackButton(false);
-        }
-        else if (fragment instanceof SettingsFragment) {
-            navigationView.setCheckedItem(R.id.nav_settings);
-
-            toolbar.setTitle(title = SettingsFragment.TITLE);
-            toolbar.setSubtitle(subtitle = "");
-            showBackButton(false);
-        }
     }
 }
