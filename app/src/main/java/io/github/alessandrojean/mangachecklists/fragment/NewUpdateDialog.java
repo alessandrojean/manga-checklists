@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.TextView;
 
 import io.github.alessandrojean.mangachecklists.R;
@@ -35,12 +37,15 @@ public class NewUpdateDialog extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        TextView textView = new TextView(getActivity());
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        View dialog = inflater.inflate(R.layout.dialog_new_update, null);
+
+        TextView textView = (TextView) dialog;
         textView.setText(getArguments().getString(BODY_KEY));
 
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle(R.string.update_check_title);
-        builder.setView(textView);
+        builder.setView(dialog);
         builder.setPositiveButton(R.string.update_check_confirm, (d, i) -> {
             Context context = getActivity();
 
